@@ -55,6 +55,28 @@ ul.task-list li input[type="checkbox"] {
 <li><p>How demographics impact which terms from the android list of terms are more or less widely understood (information available via the full study we conducted as surveyed individuals were required to report their demographics) or how demographics determine whether an individual would get the definition of a term correct, partially correct, wrong, restate the term, or say they don’t know the answer.</p></li>
 <li><p>We divided the terms into categories based on the results of a follow up study we conducted wherein users were given the definition/meaning of a term in colloquial language and were asked to suggest phrases/term names for each of them such that it would be easiest to understand. The categories were 1) Terms whose diction needed to be clarified, 2) Terms that were too broad or needed to be split up into multiple smaller terms, 3) Terms including the word ‘other’, 4) Terms with no good alternatives, 5) Terms lacking nuance. We could also see how correctness of the term differed across these categories and whether we could use correctness and user demographics to predict which category a term would fall under. Another use of data in this project could link back to the segment about the ‘similar apps’ on the app store. We could also use graphics and other available data (such as number of downloads of an app, rating of an app, number of apps with the same function, etc.) to determine whether we can create a model - possibly integrating methods that our out of the scope of Compstats such as deep NNs - to predict if an app collects/shares more or less data than other similar apps which perform the same function.</p></li>
 </ol>
+<p>Update</p>
+<ol type="1">
+<li>Have you already collected, or do you have access to, all of the data that you will need in order to complete your project? If not, please estimate the percentage of the data that you have, describe any issues that you are having, and what your plan is for getting the rest of the data.</li>
+</ol>
+<p>We have three big datasets that we will draw our data from. i. Our first dataset is a dataset of 300+ users for each row, and all “misunderstood” terms as all columns - the misunderstood terms were designated after a pilot study conducted by Ishika Keswani during the summer where a group of people explained what they understood from all Android app terms, and Ishika’s lab group classified all the terms according to if they have been “misunderstood” based on some critera by more than 67% (2/3) of the people.This dataset lists if the main experiment participants of 300+ people understand the “misunderstood” terms, so each cell is “correct”, “wrong”, “partially correct”, “I don’t know”, or a restate”. ii. Our second dataset is a massiv edataset consisting of 100,000+ json files, each listing information for a single application. We have two datasets, one for IOS, and the other for Android. Eachjson file lists app information, including various charasteristic labels of the app, that specific if a particular data is collected (user, location, activity time…) relating to terms. We will use this information to calculate what data is collected in what percent of all the apps, and can create vizualizations about what are the most misunderstood terms whose respective data is collected by most apps. iii. LAst dataset is a excel dataset with people telling how they would rephrase the misunderstood terms, for each term.</p>
+<p>We also know how to se Play Store API to webscrape from all apps from playstore if need be, to calculate similarities or any other metric.</p>
+<ol start="2" type="1">
+<li>What is the single biggest unresolved issue you are having? Please describe it briefly, and what your plan is for resolving this issue.</li>
+</ol>
+<ol type="i">
+<li>Learning backend of scrollytelling.</li>
+<li>We still need to learn to code the part that takes in a URL of a google play store app, and is able to scrape the labels as a json file, immediately generating statistics and respective visualizations.</li>
+</ol>
+<ol start="3" type="1">
+<li>What are the elements from outside of the course, if any, that you plan to incorporate into your project?</li>
+</ol>
+<ol type="i">
+<li>Webscaping from google play store applications into json files</li>
+<li>Buidling a webpage using HTML, CSS, javascript</li>
+<li>Scrollytelling</li>
+<li>Training a ML algorithm (ie Deep NEural NEtwork) for some purpose. (we are uncertain as of now).</li>
+</ol>
 
 </main>
 <!-- /main column -->
