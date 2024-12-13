@@ -1,6 +1,6 @@
 ---
-title: "forest_to_life"
-author: "Ulas Ayyilmaz"
+title: "Deforestation-to-biodiversity"
+author: "Ulas Ayyilmaz and Ishika"
 format: pdf
 execute:
   warning: false
@@ -13,7 +13,6 @@ library(tidyverse)
 library(ISLR)
 library(tidymodels)
 library(dplyr)
-install.packages("rgbif")
 library(rgbif)
 ```
 
