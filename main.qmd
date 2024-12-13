@@ -1,0 +1,197 @@
+---
+title: "forest_to_life"
+author: "Ulas Ayyilmaz"
+format: pdf
+execute:
+  warning: false
+  message: false
+---
+
+```{r}
+#| echo: false
+library(tidyverse)
+library(ISLR)
+library(tidymodels)
+library(dplyr)
+install.packages("rgbif")
+library(rgbif)
+```
+
+```{r}
+#change between 2000-2020 #https://www.globalforestwatch.org/dashboards/global/?category=forest-change&location=WyJnbG9iYWwiXQ%3D%3D&scrollTo=net-change
+forest_data <- read_csv("net_tree_change.csv")
+head(forest_data)
+
+```
+
+```{r}
+top_5_loss <- forest_data |>
+  arrange(desc(as.numeric(loss))) |>
+  slice_head(n = 5)
+top_5_gain <- forest_data |>
+  arrange(desc(as.numeric(gain))) |>
+  slice_head(n = 5)
+
+top_5_net <- forest_data |>
+  arrange(desc(as.numeric(net))) |>
+  slice_head(n = 5)
+
+top_5_loss #russia, brazil, canada, usa, indonesia
+top_5_gain #russia, canada, usa, brazil, china
+top_5_net # China, india, uruguay, blr, ukr
+```
+
+All columns of a RGBIF EOD dataset
+#"gbifID", "datasetKey", "occurrenceID", "kingdom", "phylum", "class", "order", "family", #"genus", "species", "infraspecificEpithet", "taxonRank", "scientificName", #"verbatimScientificName", "verbatimScientificNameAuthorship", "countryCode", "locality", #"stateProvince", "occurrenceStatus", "individualCount", "publishingOrgKey", #"decimalLatitude", "decimalLongitude", "coordinateUncertaintyInMeters", #"coordinatePrecision", "elevation", "elevationAccuracy", "depth", "depthAccuracy", #"eventDate", "day", "month", "year", "taxonKey", "speciesKey", "basisOfRecord", #"institutionCode", "collectionCode", "catalogNumber", "recordNumber", "identifiedBy", #"dateIdentified", "license", "rightsHolder", "recordedBy", "typeStatus", #"establishmentMeans", "lastInterpreted", "mediaType", "issue")
+
+
+Ok, brainstorm time. Deforestation means removel of forests over time due to mostly due to human interference. Deforestation affects many things that contribute to human's well-being indirectly in a negative way. A direct effect is observed on the biodiversity - specifically birds who roam freely in forests. Other 
+
+
+```{r}
+# Install and load required packages
+if (!requireNamespace("rgbif", quietly = TRUE)) install.packages("rgbif")
+if (!requireNamespace("caret", quietly = TRUE)) install.packages("caret")
+if (!requireNamespace("randomForest", quietly = TRUE)) install.packages("randomForest")
+if (!requireNamespace("neuralnet", quietly = TRUE)) install.packages("neuralnet")
+library(rgbif)
+library(caret)
+library(randomForest)
+library(neuralnet)
+
+# Parameters
+countries <- c("RUS", "BRA", "CAN", "USA", "CHN", "IDN", "IND", "URY", "BLR", "UKR")  # Target countries
+years <- 2000:2020  # Year range
+bird_taxon_key <- name_suggest(q = "Aves", rank = "class")$key  # Taxon key for birds
+eod_dataset_key <- "4fa7b334-ce0d-4e88-aaae-2e0c138d049e"  # EOD datasetKey
+
+# Function to fetch data
+fetch_data <- function(country, year) {
+  result <- occ_search(
+    taxonKey = bird_taxon_key,
+    country = country,
+    year = year,
+    datasetKey = eod_dataset_key,
+    limit = 1000  # Adjust limit as needed
+  )$data
+  
+  if (!is.null(result)) {
+    result$year <- year
+    result$country <- country
+    return(result)
+  } else {
+    return(data.frame())
+  }
+}
+
+# Fetch data for all countries and years
+bird_results <- lapply(countries, function(country) {
+  lapply(years, function(year) {
+    fetch_data(country, year)
+  })
+})
+
+# Combine results
+bird_data <- do.call(rbind, lapply(unlist(bird_results, recursive = FALSE), function(df) {
+  df[intersect(names(df), c("country", "year", "species", "decimalLatitude", "decimalLongitude", "eventDate"))]
+}))
+
+# Count observations by species and year
+bird_observation_counts <- bird_data %>%
+  group_by(country, year, species) %>%
+  summarise(observation_count = n(), .groups = "drop")
+```
+
+```{r}
+#Step 2: Combine Forest and Bird Data
+# Example forest data structure
+forest_data <- data.frame(
+  iso = c("RUS", "BRA", "CAN", "USA", "CHN"),
+  loss = c(100, 200, 50, 150, 70),
+  gain = c(300, 100, 400, 250, 500),
+  net = c(200, -100, 350, 100, 430),
+  change = c(10, -15, 20, 5, 18),
+  gfw_area__ha = c(800000, 700000, 600000, 900000, 1000000)
+)
+
+# Merge bird and forest data
+combined_data <- merge(bird_observation_counts, forest_data, by.x = "country", by.y = "iso", all.x = TRUE)
+
+# Add dependent variable (change in bird observation)
+combined_data <- combined_data %>%
+  group_by(species) %>%
+  mutate(observation_change = c(NA, diff(observation_count))) %>%
+  ungroup()
+
+# Drop rows with NA in key columns
+model_data <- na.omit(combined_data)
+```
+
+```{r}
+#Step 3: Train and Test Machine Learning Models
+# Split data into training and testing sets
+set.seed(42)
+train_index <- createDataPartition(model_data$observation_change, p = 0.8, list = FALSE)
+train_data <- model_data[train_index, ]
+test_data <- model_data[-train_index, ]
+
+# Prepare data for models
+train_x <- train_data %>% select(-observation_change)
+train_y <- train_data$observation_change
+test_x <- test_data %>% select(-observation_change)
+test_y <- test_data$observation_change
+
+# K-Nearest Neighbors (KNN)
+knn_tune <- train(
+  x = train_x, y = train_y,
+  method = "knn",
+  tuneGrid = expand.grid(k = seq(1, 20, by = 2)),
+  trControl = trainControl(method = "cv", number = 5)
+)
+best_knn <- knn_tune$bestTune$k
+
+# Support Vector Machines (SVM)
+svm_tune <- train(
+  x = train_x, y = train_y,
+  method = "svmRadial",
+  tuneGrid = expand.grid(sigma = seq(0.01, 0.1, by = 0.01), C = seq(0.1, 1, by = 0.1)),
+  trControl = trainControl(method = "cv", number = 5)
+)
+
+# Random Forest
+rf_tune <- train(
+  x = train_x, y = train_y,
+  method = "rf",
+  tuneGrid = expand.grid(mtry = seq(2, ncol(train_x), by = 1)),
+  trControl = trainControl(method = "cv", number = 5),
+  ntree = 500
+)
+
+# Neural Networks
+nn_tune <- train(
+  x = train_x, y = train_y,
+  method = "nnet",
+  tuneGrid = expand.grid(size = seq(1, 10, by = 1), decay = seq(0.01, 0.1, by = 0.01)),
+  trControl = trainControl(method = "cv", number = 5),
+  trace = FALSE
+)
+
+# Evaluate and compare models
+results <- resamples(list(KNN = knn_tune, SVM = svm_tune, RF = rf_tune, NN = nn_tune))
+summary(results)
+```
+
+```{r}
+#Step 4: Identify Species with Highest Correlation
+## Calculate correlations for each species
+species_correlation <- model_data %>%
+  group_by(species) %>%
+  summarise(correlation = cor(observation_change, change, use = "complete.obs"), .groups = "drop")
+
+# Identify top correlated species
+top_species <- species_correlation %>%
+  arrange(desc(abs(correlation))) %>%
+  head(10)
+top_species
+```
+
