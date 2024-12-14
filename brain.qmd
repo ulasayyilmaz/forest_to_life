@@ -62,3 +62,26 @@ iv. Training a ML algorithm (ie Deep NEural NEtwork) for some purpose. (we are u
 
 
 
+Updates on work:
+1- Realized that the requests from the api returned NULL. This might be because some countries in specified years don't have specific bird data. Testing hypothesis now.
+2- Found that 
+bird_data<-name_suggest(q = "Aves", rank = "class") most of the time threw a timeout error. Fixed the error by increasing timeout:
+  bird_data<-name_suggest(q = "Aves", rank = "class", curlopts = list(timeout = 60))
+3- Saw that calling for key column of the bird_data always returned Null. Changed bird_data$key -> bird_data$data$key. Works! Tax_key of bird "aves" is 212.
+
+4- couldn't figure out a way to mass download all data - probably because the size is too large. Pivoted to using specific bird species and downloading from the website one by one. 
+
+Birds:
+Forest:
+Coraciiformes (623,438):
+Cuculiformes (232,333): Cuckoos. Some species are forest-dependent.
+Strigiformes (420,677): Owls. Often found in forests and woodlands.
+
+Ground-shrubland
+Galliformes (680,284): Chickens, turkeys, and quails. Found in grasslands, forests, and shrublands.
+
+Wedlands
+Procellariiformes (78,540): Oceanic and marine environments.
+Ciconiiformes (64,794): Storks. Found in wetlands and grasslands.
+
+
