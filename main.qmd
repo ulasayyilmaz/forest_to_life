@@ -393,4 +393,37 @@ for (country in unique(joined_data$country)) {
 }
 
 ```
+```{r}
+library(ggplot2)
+
+# Loop through each country and bird order
+for (country in unique(joined_data$country)) {
+  for (bird_order in unique(joined_data$order)) {
+    # Filter data for the country and bird order
+    country_order_data <- joined_data %>%
+      filter(country == !!country, order == !!bird_order)
+    
+    # Generate a heatmap for each year
+    p <- ggplot(country_order_data, aes(x = decimalLongitude, y = decimalLatitude)) +
+      geom_tile(aes(fill = individualCount), alpha = 0.8) +
+      scale_fill_viridis_c(name = "Count") +
+      facet_wrap(~year) +
+      labs(
+        title = paste(bird_order, "Concentration Heatmap in", country),
+        x = "Longitude",
+        y = "Latitude"
+      ) +
+      theme_minimal()
+    
+    # Save the plot as a file for each country and bird order
+    ggsave(
+      filename = paste0("plots/", country, "_", bird_order, "_heatmap.png"),
+      plot = p,
+      width = 10,
+      height = 6
+    )
+  }
+}
+
+```
 

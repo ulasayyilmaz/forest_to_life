@@ -70,6 +70,9 @@ bird_data<-name_suggest(q = "Aves", rank = "class") most of the time threw a tim
 3- Saw that calling for key column of the bird_data always returned Null. Changed bird_data$key -> bird_data$data$key. Works! Tax_key of bird "aves" is 212.
 
 4- couldn't figure out a way to mass download all data - probably because the size is too large. Pivoted to using specific bird species and downloading from the website one by one. 
+Found bird species that majorly live in forests, wetlands, and shrublands. Comparing their predictability. 
+
+5- merged all bird datasets into all_bird_orders_data.csv
 
 Birds:
 Forest:
