@@ -74,14 +74,15 @@ bird_data<-name_suggest(q = "Aves", rank = "class") most of the time threw a tim
 Birds:
 Forest:
 Coraciiformes (623,438):
-Cuculiformes (232,333): Cuckoos. Some species are forest-dependent.
 Strigiformes (420,677): Owls. Often found in forests and woodlands.
 
 Ground-shrubland
 Galliformes (680,284): Chickens, turkeys, and quails. Found in grasslands, forests, and shrublands.
 
 Wedlands
-Procellariiformes (78,540): Oceanic and marine environments.
 Ciconiiformes (64,794): Storks. Found in wetlands and grasslands.
+
+paraguay -
+cod- 
 
 

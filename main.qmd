@@ -13,7 +13,11 @@ library(tidyverse)
 library(ISLR)
 library(tidymodels)
 library(dplyr)
-library(rgbif)
+library("rgbif")
+library(caret)
+library(randomForest)
+library(neuralnet)
+library(readr)
 ```
 
 ```{r}
@@ -26,19 +30,34 @@ head(forest_data)
 ```{r}
 top_5_loss <- forest_data |>
   arrange(desc(as.numeric(loss))) |>
-  slice_head(n = 5)
+  slice_head(n = 20)
 top_5_gain <- forest_data |>
   arrange(desc(as.numeric(gain))) |>
-  slice_head(n = 5)
+  slice_head(n = 20)
 
-top_5_net <- forest_data |>
+top_5_net_desc <- forest_data |>
   arrange(desc(as.numeric(net))) |>
-  slice_head(n = 5)
+  slice_head(n = 20)
 
-top_5_loss #russia, brazil, canada, usa, indonesia
-top_5_gain #russia, canada, usa, brazil, china
-top_5_net # China, india, uruguay, blr, ukr
+top_5_net_asc <- forest_data |>
+  arrange(as.numeric(net)) |>
+  slice_head(n = 20)
+
+top_5_net_desc # poland, ukraine, uruguay, ireland, bangladesh
+top_5_net_asc#tanzania, Mozambique, indonesia, DCcongo, paraguay
 ```
+species of interest (check exist for each country)
+
+Most net negative:
+paraguay -
+cod- 
+
+most positive
+ury
+ukr
+pol
+ssd
+bgd
 
 All columns of a RGBIF EOD dataset
 #"gbifID", "datasetKey", "occurrenceID", "kingdom", "phylum", "class", "order", "family", #"genus", "species", "infraspecificEpithet", "taxonRank", "scientificName", #"verbatimScientificName", "verbatimScientificNameAuthorship", "countryCode", "locality", #"stateProvince", "occurrenceStatus", "individualCount", "publishingOrgKey", #"decimalLatitude", "decimalLongitude", "coordinateUncertaintyInMeters", #"coordinatePrecision", "elevation", "elevationAccuracy", "depth", "depthAccuracy", #"eventDate", "day", "month", "year", "taxonKey", "speciesKey", "basisOfRecord", #"institutionCode", "collectionCode", "catalogNumber", "recordNumber", "identifiedBy", #"dateIdentified", "license", "rightsHolder", "recordedBy", "typeStatus", #"establishmentMeans", "lastInterpreted", "mediaType", "issue")
@@ -48,57 +67,74 @@ Ok, brainstorm time. Deforestation means removel of forests over time due to mos
 
 
 ```{r}
-# Install and load required packages
-if (!requireNamespace("rgbif", quietly = TRUE)) install.packages("rgbif")
-if (!requireNamespace("caret", quietly = TRUE)) install.packages("caret")
-if (!requireNamespace("randomForest", quietly = TRUE)) install.packages("randomForest")
-if (!requireNamespace("neuralnet", quietly = TRUE)) install.packages("neuralnet")
-library(rgbif)
-library(caret)
-library(randomForest)
-library(neuralnet)
-
 # Parameters
 countries <- c("RUS", "BRA", "CAN", "USA", "CHN", "IDN", "IND", "URY", "BLR", "UKR")  # Target countries
 years <- 2000:2020  # Year range
-bird_taxon_key <- name_suggest(q = "Aves", rank = "class")$key  # Taxon key for birds
+bird_data<-name_suggest(q = "Aves", rank = "class", curlopts = list(timeout = 60))
+bird_taxon_key <- bird_data$data$key
 eod_dataset_key <- "4fa7b334-ce0d-4e88-aaae-2e0c138d049e"  # EOD datasetKey
+bird_taxon_key
+```
 
-# Function to fetch data
-fetch_data <- function(country, year) {
-  result <- occ_search(
-    taxonKey = bird_taxon_key,
-    country = country,
-    year = year,
-    datasetKey = eod_dataset_key,
-    limit = 1000  # Adjust limit as needed
-  )$data
+```{r}
+# Define the target countries and years
+countries <- c("URY","BLR","UKR","POL","SSD")  # Target countries
+years <- c(2000, 2010, 2020)  # Year range
+eod_dataset_key <- "4fa7b334-ce0d-4e88-aaae-2e0c138d049e"  # EOD datasetKey
+species <- c("Coraciiformes","Strigiformes","Galliformes","Ciconiiformes")
+```
+
+
+
+```{r}
+# Load necessary library
+library(dplyr)  # For data manipulation
+
+# Initialize an empty dataframe to store the combined data
+combined_data <- data.frame()
+
+# List of country names (folders inside the "data" directory)
+countries <- c("poland", "ukraine", "uruguay", "ireland", "bangladesh",
+               "tanzania", "Mozambique", "indonesia", "DCongo", "paraguay")
+
+# Loop through each country's folder and combine all CSV files
+for (country in countries) {
+  # Path to the country's folder
+  country_path <- file.path("data", country)
   
-  if (!is.null(result)) {
-    result$year <- year
-    result$country <- country
-    return(result)
-  } else {
-    return(data.frame())
+  # Get the list of CSV files in the country's folder
+  csv_files <- list.files(country_path, pattern = "\\.csv$", full.names = TRUE)
+  
+  # Read each CSV file and add its content to the combined dataframe
+  for (csv_file in csv_files) {
+   tryCatch({
+      # Read the CSV file (use read_delim for robustness)
+      data <- read_delim(csv_file, delim = NULL, show_col_types = FALSE)
+      
+      # Add a column to identify the country
+      data$country <- country
+      
+      # Append the data to the combined dataframe
+      combined_data <- bind_rows(combined_data, data)
+    }, error = function(e) {
+      cat("Error reading file:", csv_file, "\n")
+    })
   }
 }
 
-# Fetch data for all countries and years
-bird_results <- lapply(countries, function(country) {
-  lapply(years, function(year) {
-    fetch_data(country, year)
-  })
-})
+# Save the combined dataframe as a CSV file in the main directory
+write.csv(combined_data, "all_bird_orders_data.csv", row.names = FALSE)
 
-# Combine results
-bird_data <- do.call(rbind, lapply(unlist(bird_results, recursive = FALSE), function(df) {
-  df[intersect(names(df), c("country", "year", "species", "decimalLatitude", "decimalLongitude", "eventDate"))]
-}))
+cat("Combined CSV file created as 'all_bird_orders_data.csv' in the main directory.\n")
 
-# Count observations by species and year
-bird_observation_counts <- bird_data %>%
-  group_by(country, year, species) %>%
-  summarise(observation_count = n(), .groups = "drop")
+```
+
+
+
+
+```{r}
+bird_orders <- read.csv(all_bird_orders_data.csv)
+bird_orders
 ```
 
 ```{r}
