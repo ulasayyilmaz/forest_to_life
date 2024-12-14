@@ -364,3 +364,33 @@ ggplot(test_results, aes(x = order_count, y = SVM_Preds)) +
 
 ```
 
+
+```{r}
+# Loop through each country and create plots
+for (country in unique(joined_data$country)) {
+  country_data <- joined_data %>% filter(country == !!country)  # Filter data for the country
+  
+  # Create a plot for each bird order
+  p <- ggplot(country_data, aes(x = year, y = individualCount, color = order, group = order)) +
+    geom_line(size = 1.2) +
+    geom_point(size = 3) +
+    facet_wrap(~order, scales = "free_y") +
+    labs(
+      title = paste("Bird Order Counts Over Time in", country),
+      x = "Year",
+      y = "Count of Bird Order"
+    ) +
+    theme_minimal() +
+    theme(legend.position = "bottom")
+  
+  # Save the plot as a file for each country
+  ggsave(
+    filename = paste0("plots/", country, "_bird_order_counts.png"),
+    plot = p,
+    width = 10,
+    height = 6
+  )
+}
+
+```
+
