@@ -45,19 +45,17 @@ top_5_net_asc <- forest_data |>
 
 top_5_net_desc # poland, ukraine, uruguay, ireland, bangladesh
 top_5_net_asc#tanzania, Mozambique, indonesia, DCcongo, paraguay
+
+forest_data <- forest_data |>
+  select(iso, loss,gain,net)
 ```
 species of interest (check exist for each country)
 
 Most net negative:
-paraguay -
-cod- 
+PRY, COD, MOZ, IDN, TZA
 
-most positive
-ury
-ukr
-pol
-ssd
-bgd
+most positive:
+URY, UKR, POL,IRL, BGD
 
 All columns of a RGBIF EOD dataset
 #"gbifID", "datasetKey", "occurrenceID", "kingdom", "phylum", "class", "order", "family", #"genus", "species", "infraspecificEpithet", "taxonRank", "scientificName", #"verbatimScientificName", "verbatimScientificNameAuthorship", "countryCode", "locality", #"stateProvince", "occurrenceStatus", "individualCount", "publishingOrgKey", #"decimalLatitude", "decimalLongitude", "coordinateUncertaintyInMeters", #"coordinatePrecision", "elevation", "elevationAccuracy", "depth", "depthAccuracy", #"eventDate", "day", "month", "year", "taxonKey", "speciesKey", "basisOfRecord", #"institutionCode", "collectionCode", "catalogNumber", "recordNumber", "identifiedBy", #"dateIdentified", "license", "rightsHolder", "recordedBy", "typeStatus", #"establishmentMeans", "lastInterpreted", "mediaType", "issue")
@@ -94,8 +92,8 @@ library(dplyr)  # For data manipulation
 combined_data <- data.frame()
 
 # List of country names (folders inside the "data" directory)
-countries <- c("poland", "ukraine", "uruguay", "ireland", "bangladesh",
-               "tanzania", "Mozambique", "indonesia", "DCongo", "paraguay")
+countries <- c( "poland","ukraine", "uruguay", "ireland", "bangladesh",
+               "tanzania", "mozambique", "indonesia", "dcongo", "paraguay")
 
 # Loop through each country's folder and combine all CSV files
 for (country in countries) {
@@ -129,38 +127,47 @@ cat("Combined CSV file created as 'all_bird_orders_data.csv' in the main directo
 
 ```
 
-
-
+```{r}
+bird_orders <- read.csv("all_bird_orders_data.csv")
+bird_orders
+#596024662,584212444
+```
+info: all belong to aves class
+#important columns to keep:
+order, family, genus, species, stateProvince, individualCount, decimalLatitude, elevation,decimalLongitude, day,month, year, country
 
 ```{r}
-bird_orders <- read.csv(all_bird_orders_data.csv)
-bird_orders
+filtered_bird_orders <- bird_orders |> 
+  select(order, family, genus, species, stateProvince, individualCount, decimalLatitude, elevation,decimalLongitude, day,month, year, country)
+filtered_bird_orders
 ```
 
 ```{r}
-#Step 2: Combine Forest and Bird Data
-# Example forest data structure
-forest_data <- data.frame(
-  iso = c("RUS", "BRA", "CAN", "USA", "CHN"),
-  loss = c(100, 200, 50, 150, 70),
-  gain = c(300, 100, 400, 250, 500),
-  net = c(200, -100, 350, 100, 430),
-  change = c(10, -15, 20, 5, 18),
-  gfw_area__ha = c(800000, 700000, 600000, 900000, 1000000)
+country_mapping <- data.frame(
+  iso = c("POL", "UKR", "URY", "IRL", "BGD", "TZA", "MOZ", "IDN", "COD", "PRY"),
+  country = c("poland", "ukraine", "uruguay", "ireland", "bangladesh",
+              "tanzania", "mozambique", "indonesia", "dcongo", "paraguay")
 )
 
-# Merge bird and forest data
-combined_data <- merge(bird_observation_counts, forest_data, by.x = "country", by.y = "iso", all.x = TRUE)
+filtered_bird_orders$country <- tolower(filtered_bird_orders$country)
 
-# Add dependent variable (change in bird observation)
-combined_data <- combined_data %>%
-  group_by(species) %>%
-  mutate(observation_change = c(NA, diff(observation_count))) %>%
-  ungroup()
+filtered_forest_data <- forest_data %>%
+  filter(iso %in% country_mapping$iso) %>%   # Keep only rows with matching ISO codes
+  left_join(country_mapping, by = "iso")  
 
-# Drop rows with NA in key columns
-model_data <- na.omit(combined_data)
+# Combine the datasets based on the "country" column
+combined_data <- left_join(filtered_bird_orders, filtered_forest_data, by = "country")
+
+# Output the combined dataset
+write.csv(combined_data, "filtered_forest_data.csv")
 ```
+
+```{r}
+joined_data <- read.csv("filtered_forest_data.csv")
+joined_data
+```
+
+
 
 ```{r}
 #Step 3: Train and Test Machine Learning Models
