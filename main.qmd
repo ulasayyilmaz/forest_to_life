@@ -45,9 +45,6 @@ top_5_net_asc <- forest_data |>
 
 top_5_net_desc # poland, ukraine, uruguay, ireland, bangladesh
 top_5_net_asc#tanzania, Mozambique, indonesia, DCcongo, paraguay
-
-forest_data <- forest_data |>
-  select(iso, loss,gain,net)
 ```
 species of interest (check exist for each country)
 
@@ -94,16 +91,17 @@ combined_data <- data.frame()
 # List of country names (folders inside the "data" directory)
 countries <- c( "poland","ukraine", "uruguay", "ireland", "bangladesh",
                "tanzania", "mozambique", "indonesia", "dcongo", "paraguay")
-
+countries
 # Loop through each country's folder and combine all CSV files
 for (country in countries) {
+  
   # Path to the country's folder
   country_path <- file.path("data", country)
-  
-  # Get the list of CSV files in the country's folder
+
+    # Get the list of CSV files in the country's folder
   csv_files <- list.files(country_path, pattern = "\\.csv$", full.names = TRUE)
-  
-  # Read each CSV file and add its content to the combined dataframe
+
+    # Read each CSV file and add its content to the combined dataframe
   for (csv_file in csv_files) {
    tryCatch({
       # Read the CSV file (use read_delim for robustness)
@@ -164,76 +162,205 @@ write.csv(combined_data, "filtered_forest_data.csv")
 
 ```{r}
 joined_data <- read.csv("filtered_forest_data.csv")
-joined_data
+tail(joined_data)
 ```
 
 
+```{r}
+# Aggregate bird count by order, country, and year
+order_counts <- joined_data %>%
+  group_by(order, country, year) %>%
+  summarize(order_count = sum(individualCount, na.rm = TRUE), .groups = "drop")
+
+# Merge aggregated counts back with deforestation data
+model_data <- joined_data %>%
+  select(country, year, iso, stable, loss, gain, disturb, net, change, gfw_area__ha) %>%
+  distinct() %>%
+  inner_join(order_counts, by = c("country", "year"))
+
+model_data
+```
 
 ```{r}
-#Step 3: Train and Test Machine Learning Models
-# Split data into training and testing sets
-set.seed(42)
-train_index <- createDataPartition(model_data$observation_change, p = 0.8, list = FALSE)
-train_data <- model_data[train_index, ]
-test_data <- model_data[-train_index, ]
+set.seed(123)  # For reproducibility
+library(caret)
 
-# Prepare data for models
-train_x <- train_data %>% select(-observation_change)
-train_y <- train_data$observation_change
-test_x <- test_data %>% select(-observation_change)
-test_y <- test_data$observation_change
+# Split the data into training and testing sets
+split_index <- createDataPartition(model_data$order_count, p = 0.8, list = FALSE)
+train_data <- model_data[split_index, ]
+test_data <- model_data[-split_index, ]
 
-# K-Nearest Neighbors (KNN)
-knn_tune <- train(
-  x = train_x, y = train_y,
-  method = "knn",
-  tuneGrid = expand.grid(k = seq(1, 20, by = 2)),
-  trControl = trainControl(method = "cv", number = 5)
-)
-best_knn <- knn_tune$bestTune$k
+```
 
-# Support Vector Machines (SVM)
-svm_tune <- train(
-  x = train_x, y = train_y,
-  method = "svmRadial",
-  tuneGrid = expand.grid(sigma = seq(0.01, 0.1, by = 0.01), C = seq(0.1, 1, by = 0.1)),
-  trControl = trainControl(method = "cv", number = 5)
-)
+```{r}
+library(randomForest)
+library(caret)
 
-# Random Forest
-rf_tune <- train(
-  x = train_x, y = train_y,
+# Random forest model with tuning
+rf_model <- train(
+  order_count ~ stable + loss + gain + disturb + net + change + gfw_area__ha,
+  data = train_data,
   method = "rf",
-  tuneGrid = expand.grid(mtry = seq(2, ncol(train_x), by = 1)),
-  trControl = trainControl(method = "cv", number = 5),
-  ntree = 500
+  trControl = trainControl(method = "oob", search = "grid"),
+  tuneGrid = expand.grid(mtry = 2:6)  # Test different values of mtry
 )
 
-# Neural Networks
-nn_tune <- train(
-  x = train_x, y = train_y,
-  method = "nnet",
-  tuneGrid = expand.grid(size = seq(1, 10, by = 1), decay = seq(0.01, 0.1, by = 0.01)),
-  trControl = trainControl(method = "cv", number = 5),
-  trace = FALSE
-)
+# Print results
+print(rf_model)
 
-# Evaluate and compare models
-results <- resamples(list(KNN = knn_tune, SVM = svm_tune, RF = rf_tune, NN = nn_tune))
-summary(results)
+# Visualize the trained random forest model
+plot(rf_model)
+
 ```
 
 ```{r}
-#Step 4: Identify Species with Highest Correlation
-## Calculate correlations for each species
-species_correlation <- model_data %>%
-  group_by(species) %>%
-  summarise(correlation = cor(observation_change, change, use = "complete.obs"), .groups = "drop")
+#calculate prediction accuracy for train and test data with the trained random forest
 
-# Identify top correlated species
-top_species <- species_correlation %>%
-  arrange(desc(abs(correlation))) %>%
-  head(10)
-top_species
+```
+
+
+```{r}
+library(e1071)
+
+# SVM model with tuning
+svm_model <- train(
+  order_count ~ stable + loss + gain + disturb + net + change + gfw_area__ha,
+  data = train_data,
+  method = "svmRadial",
+  trControl = trainControl(method = "cv", number = 10),  # 10-fold cross-validation
+  tuneGrid = expand.grid(sigma = seq(0.01, 0.1, length.out = 5), C = seq(0.1, 1, length.out = 5))
+)
+
+# Print results
+print(svm_model)
+
+# Visualize SVM model performance
+plot(svm_model)
+
+```
+
+```{r}
+#calculate prediction accuracy
+```
+
+
+```{r}
+# KNN model with tuning
+knn_model <- train(
+  order_count ~ stable + loss + gain + disturb + net + change + gfw_area__ha,
+  data = train_data,
+  method = "knn",
+  trControl = trainControl(method = "cv", number = 10),  # 10-fold cross-validation
+  tuneGrid = expand.grid(k = seq(1, 15, by = 2))  # Test different values of k
+)
+
+# Print results
+print(knn_model)
+
+# Visualize the KNN model performance
+plot(knn_model)
+
+```
+
+```{r}
+# Make predictions
+rf_preds <- predict(rf_model, test_data)
+knn_preds <- predict(knn_model, test_data)
+svm_preds <- predict(svm_model, test_data)
+
+# Evaluate performance (example: RMSE)
+rf_rmse <- RMSE(rf_preds, test_data$order_count)
+knn_rmse <- RMSE(knn_preds, test_data$order_count)
+svm_rmse <- RMSE(svm_preds, test_data$order_count)
+
+cat("Random Forest RMSE:", rf_rmse, "\n")
+cat("KNN RMSE:", knn_rmse, "\n")
+cat("SVM RMSE:", svm_rmse, "\n")
+```
+
+```{r}
+# Variable importance plot
+varImpPlot(rf_model$finalModel)
+```
+```{r}
+# Predict order_count using each model
+rf_preds <- predict(rf_model, test_data)  # Random Forest predictions
+knn_preds <- predict(knn_model, test_data)  # KNN predictions
+svm_preds <- predict(svm_model, test_data)  # SVM predictions
+
+# Load necessary library for evaluation metrics
+library(Metrics)
+
+# Define metrics
+calc_metrics <- function(actual, predicted) {
+  r_squared <- cor(actual, predicted)^2
+  rmse_val <- rmse(actual, predicted)
+  mae_val <- mae(actual, predicted)
+  
+  return(data.frame(
+    R_Squared = r_squared,
+    RMSE = rmse_val,
+    MAE = mae_val
+  ))
+}
+
+# Calculate metrics for each model
+rf_metrics <- calc_metrics(test_data$order_count, rf_preds)
+knn_metrics <- calc_metrics(test_data$order_count, knn_preds)
+svm_metrics <- calc_metrics(test_data$order_count, svm_preds)
+
+# Combine results for comparison
+model_metrics <- rbind(
+  cbind(Model = "Random Forest", rf_metrics),
+  cbind(Model = "KNN", knn_metrics),
+  cbind(Model = "SVM", svm_metrics)
+)
+
+print(model_metrics)
+
+
+```
+```{r}
+# Combine actual and predicted data for visualization
+test_results <- test_data %>%
+  mutate(
+    RF_Preds = rf_preds,
+    KNN_Preds = knn_preds,
+    SVM_Preds = svm_preds
+  )
+
+# Create scatter plots for each model
+library(ggplot2)
+
+ggplot(test_results, aes(x = order_count, y = RF_Preds)) +
+  geom_point(color = "blue") +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
+  labs(
+    title = "Random Forest Predictions vs Actual",
+    x = "Actual Order Count",
+    y = "Predicted Order Count"
+  ) +
+  theme_minimal()
+
+ggplot(test_results, aes(x = order_count, y = KNN_Preds)) +
+  geom_point(color = "green") +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
+  labs(
+    title = "KNN Predictions vs Actual",
+    x = "Actual Order Count",
+    y = "Predicted Order Count"
+  ) +
+  theme_minimal()
+
+ggplot(test_results, aes(x = order_count, y = SVM_Preds)) +
+  geom_point(color = "purple") +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
+  labs(
+    title = "SVM Predictions vs Actual",
+    x = "Actual Order Count",
+    y = "Predicted Order Count"
+  ) +
+  theme_minimal()
+
 ```
 
