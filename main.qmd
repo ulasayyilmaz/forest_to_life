@@ -153,7 +153,7 @@ joined_data <- left_join(filtered_bird_orders, filtered_forest_data, by = "count
 
 # Output the combined dataset
 write.csv(joined_data, "filtered_forest_data.csv")
-joined_data
+head(joined_data)
 
 #get rid of NA's in joined data
 joined_data1 <- joined_data |>
@@ -174,48 +174,48 @@ library(dplyr)
 ```
 
 ```{r}
-country_density_map <- joined_data1 |> 
-  group_by(country,order,year)
-
-# Determine the global range of individualCount for consistent scaling
-global_size_range <- range(country_density_map$individualCount, na.rm = TRUE)
-
-# Iterate through each bird order and create maps for each country and year
-bird_orders <- unique(country_density_map$order)
-
-# Create a list to store plots
-plots <- list()
-c = 0
-world_map <- rnaturalearth::ne_countries(scale = "medium", returnclass = "sf")
-country_maps <- world_map |> filter(name_long %in% countries)
-
-for (order1 in bird_orders) {
-  for (country1 in countries) {
-    for (year1 in years) {
-      c <- c + 1
-      # Filter data for the specific bird order, year, and country
-      specific_data <- country_density_map |>
-        filter(order == order1, year == year1, country == country1)
-
-      # Join country map with bird observation data
-      country_map <- country_maps |> filter(name_long == country1)
-
-      # Create the plot
-      plots[[c]] <-
-        ggplot() +
-        geom_sf(data = country_map, fill = "gray90", color = "black") +
-        geom_point(data = specific_data,
-                   aes(x = decimalLongitude, y = decimalLatitude, size = individualCount),
-                   alpha = 0.7) +
-        scale_size_continuous(name = "Count", range = c(1, 10), limits = global_size_range) +
-        ggtitle(paste("Bird Order:", order1, "Year:", year1, "Country:", country1)) +
-        theme_bw()
-
-      ggsave(paste("plot_geodistribution/bird_order:", order1, "year:", year1, "country:", country1,".png"), plots[[c]], width = 10, height = 7)
-
-    }
-  }
-}
+# country_density_map <- joined_data1 |> 
+#   group_by(country,order,year)
+# 
+# # Determine the global range of individualCount for consistent scaling
+# global_size_range <- range(country_density_map$individualCount, na.rm = TRUE)
+# 
+# # Iterate through each bird order and create maps for each country and year
+# bird_orders <- unique(country_density_map$order)
+# 
+# # Create a list to store plots
+# plots <- list()
+# c = 0
+# world_map <- rnaturalearth::ne_countries(scale = "medium", returnclass = "sf")
+# country_maps <- world_map |> filter(name_long %in% countries)
+# 
+# for (order1 in bird_orders) {
+#   for (country1 in countries) {
+#     for (year1 in years) {
+#       c <- c + 1
+#       # Filter data for the specific bird order, year, and country
+#       specific_data <- country_density_map |>
+#         filter(order == order1, year == year1, country == country1)
+# 
+#       # Join country map with bird observation data
+#       country_map <- country_maps |> filter(name_long == country1)
+# 
+#       # Create the plot
+#       plots[[c]] <-
+#         ggplot() +
+#         geom_sf(data = country_map, fill = "gray90", color = "black") +
+#         geom_point(data = specific_data,
+#                    aes(x = decimalLongitude, y = decimalLatitude, size = individualCount),
+#                    alpha = 0.7) +
+#         scale_size_continuous(name = "Count", range = c(1, 10), limits = global_size_range) +
+#         ggtitle(paste("Bird Order:", order1, "Year:", year1, "Country:", country1)) +
+#         theme_bw()
+# 
+#       ggsave(paste("plot_geodistribution/bird_order:", order1, "year:", year1, "country:", country1,".png"), plots[[c]], width = 10, height = 7)
+# 
+#     }
+#   }
+# }
 
 ```
 
@@ -223,10 +223,10 @@ for (order1 in bird_orders) {
 ```{r}
 # ggsave("bird_density_map.png", plots[[1]], width = 10, height = 7)
 # Example: Display the first plot
-print(length(plots))
-print(plots[[1]])
-print(plots[[2]])
-print(plots[[3]])
+# print(length(plots))
+# print(plots[[1]])
+# print(plots[[2]])
+# print(plots[[3]])
 
 ```
 
@@ -283,54 +283,54 @@ print(forest_change_plot)
 
 
 ```{r}
-#visualize geographical distribution with log normalized data
-country_density_map_logscale <- country_density_map|>
-  mutate(
-    log_count = log1p(individualCount)  # log1p handles zero counts
-  )
-
-global_size_range <- range(country_density_map_logscale$log_count, na.rm = TRUE)
-
-# Iterate through each bird order and create maps for each country and year
-bird_orders <- unique(country_density_map_logscale$order)
-
-# Create a list to store plots
-plots1 <- list()
-c = 0
-for (order1 in bird_orders) {
-  for (country1 in countries) {
-    for (year1 in years) {
-      c <- c + 1
-      # Filter data for the specific bird order, year, and country
-      specific_data <- country_density_map_logscale |>
-        filter(order == order1, year == year1, country == country1)
-
-      # Join country map with bird observation data
-      country_map <- country_maps |> filter(name_long == country1)
-
-      # Create the plot
-      plots1[[c]] <-
-        ggplot() +
-        geom_sf(data = country_map, fill = "gray90", color = "black") +
-        geom_point(data = specific_data,
-                   aes(x = decimalLongitude, y = decimalLatitude, size = individualCount),
-                   alpha = 0.7) +
-        scale_size_continuous(name = "Count", range = c(1, 10), limits = global_size_range) +
-        ggtitle(paste("Bird Order:", order1, "Year:", year1, "Country:", country1)) +
-        theme_bw()
-
-      ggsave(paste("plot_geodistribution_logscale/bird_order:", order1, "year:", year1, "country:", country1,".png"), plots1[[c]], width = 10, height = 7)
-
-    }
-  }
-}
+# #visualize geographical distribution with log normalized data
+# country_density_map_logscale <- country_density_map|>
+#   mutate(
+#     log_count = log1p(individualCount)  # log1p handles zero counts
+#   )
+# 
+# global_size_range <- range(country_density_map_logscale$log_count, na.rm = TRUE)
+# 
+# # Iterate through each bird order and create maps for each country and year
+# bird_orders <- unique(country_density_map_logscale$order)
+# 
+# # Create a list to store plots
+# plots1 <- list()
+# c = 0
+# for (order1 in bird_orders) {
+#   for (country1 in countries) {
+#     for (year1 in years) {
+#       c <- c + 1
+#       # Filter data for the specific bird order, year, and country
+#       specific_data <- country_density_map_logscale |>
+#         filter(order == order1, year == year1, country == country1)
+# 
+#       # Join country map with bird observation data
+#       country_map <- country_maps |> filter(name_long == country1)
+# 
+#       # Create the plot
+#       plots1[[c]] <-
+#         ggplot() +
+#         geom_sf(data = country_map, fill = "gray90", color = "black") +
+#         geom_point(data = specific_data,
+#                    aes(x = decimalLongitude, y = decimalLatitude, size = individualCount),
+#                    alpha = 0.7) +
+#         scale_size_continuous(name = "Count", range = c(1, 10), limits = global_size_range) +
+#         ggtitle(paste("Bird Order:", order1, "Year:", year1, "Country:", country1)) +
+#         theme_bw()
+# 
+#       ggsave(paste("plot_geodistribution_logscale/bird_order:", order1, "year:", year1, "country:", country1,".png"), plots1[[c]], width = 10, height = 7)
+# 
+#     }
+#   }
+# }
 
 ```
 
 ```{r}
-plots1[[1]]
-plots1[[2]]
-plots1[[3]]
+# plots1[[1]]
+# plots1[[2]]
+# plots1[[3]]
 ```
 
 ```{r}
@@ -345,7 +345,7 @@ model_data_log <- model_data|>
   mutate(
     log_count = log1p(order_count)  # log1p handles zero counts
   )
-model_data_log
+head(model_data_log)
 ```
 
 ```{r}
@@ -355,7 +355,7 @@ model_data_log_normalized <- model_data_log |>
                        (max(log_count, na.rm = TRUE) - min(log_count, na.rm = TRUE))
   )
 
-model_data_log_normalized
+head(model_data_log_normalized)
 ```
 
 
@@ -369,7 +369,7 @@ model_data_log_normalized_bins <- model_data_log_normalized |>
       include.lowest = TRUE
     )
   )
-model_data_log_normalized_bins
+head(model_data_log_normalized_bins)
 ```
 
 ```{r}
@@ -438,56 +438,55 @@ print(accuracy_results_pol)
 ```
 
 ```{r}
-
 library(tidyr)
 library(ggplot2)
-
-# Step 3: Create a Confusion Matrix with Explicit Levels
-confusion_data <- svm_predictions |>
-  conf_mat(truth = scaled_log_count_bins, estimate = .pred_class)
-
-# Extract the confusion matrix counts as a data frame
-confusion_data_df <- as_tibble(confusion_data$table) |>
-  complete(Truth = paste0("b", 1:10), Prediction = paste0("b", 1:10), fill = list(n = 0))
-
-# Step 4: Plot the Heatmap
-heatmap_plot <- ggplot(confusion_data_df, aes(x = Prediction, y = Truth, fill = n)) +
-  geom_tile() +
-  scale_fill_gradient(low = "white", high = "blue") +
-  labs(
-    title = "Confusion Matrix Heatmap",
-    x = "Predicted Bin",
-    y = "Actual Bin",
-    fill = "Count"
-  ) +
-  theme_minimal()
-
-print(heatmap_plot)
+# 
+# # Step 3: Create a Confusion Matrix with Explicit Levels
+# confusion_data <- svm_predictions |>
+#   conf_mat(truth = scaled_log_count_bins, estimate = .pred_class)
+# 
+# # Extract the confusion matrix counts as a data frame
+# confusion_data_df <- as_tibble(confusion_data$table) |>
+#   complete(Truth = paste0("b", 1:10), Prediction = paste0("b", 1:10), fill = list(n = 0))
+# 
+# # Step 4: Plot the Heatmap
+# heatmap_plot <- ggplot(confusion_data_df, aes(x = Prediction, y = Truth, fill = n)) +
+#   geom_tile() +
+#   scale_fill_gradient(low = "white", high = "blue") +
+#   labs(
+#     title = "Confusion Matrix Heatmap",
+#     x = "Predicted Bin",
+#     y = "Actual Bin",
+#     fill = "Count"
+#   ) +
+#   theme_minimal()
+# 
+# print(heatmap_plot)
 
 
 ```
 
 ```{r}
-# Check prediction distribution
-svm_predictions |>
-  count(.pred_class) |>
-  arrange(desc(n)) |>
-  mutate(proportion = n / sum(n))
-
-# Compare predicted vs actual class distribution
-predicted_distribution <- svm_predictions |>
-  count(.pred_class) |>
-  rename(Predicted = n)
-
-actual_distribution <- test_data_bins |>
-  count(scaled_log_count_bins) |>
-  rename(Actual = n)
-
-comparison <- full_join(predicted_distribution, actual_distribution, 
-                        by = c(".pred_class" = "scaled_log_count_bins")) |>
-  replace_na(list(Predicted = 0, Actual = 0))
-
-print(comparison)
+# # Check prediction distribution
+# svm_predictions |>
+#   count(.pred_class) |>
+#   arrange(desc(n)) |>
+#   mutate(proportion = n / sum(n))
+# 
+# # Compare predicted vs actual class distribution
+# predicted_distribution <- svm_predictions |>
+#   count(.pred_class) |>
+#   rename(Predicted = n)
+# 
+# actual_distribution <- test_data_bins |>
+#   count(scaled_log_count_bins) |>
+#   rename(Actual = n)
+# 
+# comparison <- full_join(predicted_distribution, actual_distribution, 
+#                         by = c(".pred_class" = "scaled_log_count_bins")) |>
+#   replace_na(list(Predicted = 0, Actual = 0))
+# 
+# print(comparison)
 ```
 
 ```{r}
@@ -514,28 +513,31 @@ svm_metrics_rbf <- collect_metrics(svm_rbf_tune)
 accuracy_results_rbf <- svm_metrics_rbf |> 
   filter(.metric == "accuracy")
 print(accuracy_results_rbf)
+```
 
-# Step 3: Create a Confusion Matrix with Explicit Levels
-confusion_data <- svm_predictions |>
-  conf_mat(truth = scaled_log_count_bins, estimate = .pred_class)
 
-# Extract the confusion matrix counts as a data frame
-confusion_data_df <- as_tibble(confusion_data$table) |>
-  complete(Truth = paste0("b", 1:10), Prediction = paste0("b", 1:10), fill = list(n = 0))
-
-# Step 4: Plot the Heatmap
-heatmap_plot <- ggplot(confusion_data_df, aes(x = Prediction, y = Truth, fill = n)) +
-  geom_tile() +
-  scale_fill_gradient(low = "white", high = "blue") +
-  labs(
-    title = "Confusion Matrix Heatmap",
-    x = "Predicted Bin",
-    y = "Actual Bin",
-    fill = "Count"
-  ) +
-  theme_minimal()
-
-print(heatmap_plot)
+```{r}
+# # Step 3: Create a Confusion Matrix with Explicit Levels
+# confusion_data <- svm_predictions |>
+#   conf_mat(truth = scaled_log_count_bins, estimate = .pred_class)
+# 
+# # Extract the confusion matrix counts as a data frame
+# confusion_data_df <- as_tibble(confusion_data$table) |>
+#   complete(Truth = paste0("b", 1:10), Prediction = paste0("b", 1:10), fill = list(n = 0))
+# 
+# # Step 4: Plot the Heatmap
+# heatmap_plot <- ggplot(confusion_data_df, aes(x = Prediction, y = Truth, fill = n)) +
+#   geom_tile() +
+#   scale_fill_gradient(low = "white", high = "blue") +
+#   labs(
+#     title = "Confusion Matrix Heatmap",
+#     x = "Predicted Bin",
+#     y = "Actual Bin",
+#     fill = "Count"
+#   ) +
+#   theme_minimal()
+# 
+# print(heatmap_plot)
 
 ```
 
