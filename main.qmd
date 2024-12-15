@@ -46,6 +46,11 @@ top_5_net_asc <- forest_data |>
 top_5_net_desc # poland, ukraine, uruguay, ireland, bangladesh
 top_5_net_asc#tanzania, Mozambique, indonesia, DCcongo, paraguay
 ```
+```{r}
+
+```
+
+
 order of interest (check exist for each country)
 
 Most net negative:
@@ -60,30 +65,23 @@ All columns of a RGBIF EOD dataset
 
 Ok, brainstorm time. Deforestation means removel of forests over time due to mostly due to human interference. Deforestation affects many things that contribute to human's well-being indirectly in a negative way. A direct effect is observed on the biodiversity - specifically birds who roam freely in forests. Other 
 
-
 ```{r}
-# Parameters
-countries <- c("RUS", "BRA", "CAN", "USA", "CHN", "IDN", "IND", "URY", "BLR", "UKR")  # Target countries
-years <- 2000:2020  # Year range
 bird_data<-name_suggest(q = "Aves", rank = "class", curlopts = list(timeout = 60))
 bird_taxon_key <- bird_data$data$key
 eod_dataset_key <- "4fa7b334-ce0d-4e88-aaae-2e0c138d049e"  # EOD datasetKey
-bird_taxon_key
 ```
 
 ```{r}
 # Define the target countries and years
-countries <- c("URY","BLR","UKR","POL","SSD")  # Target countries
 years <- c(2000, 2010, 2020)  # Year range
 eod_dataset_key <- "4fa7b334-ce0d-4e88-aaae-2e0c138d049e"  # EOD datasetKey
-order <- c("Coraciiformes","Strigiformes","Galliformes","Ciconiiformes")
+orders <- c("Coraciiformes","Strigiformes","Galliformes","Ciconiiformes")
 ```
 
 
 
 ```{r}
 # Load necessary library
-library(dplyr)  # For data manipulation
 
 # Initialize an empty dataframe to store the combined data
 combined_data <- data.frame()
@@ -91,7 +89,6 @@ combined_data <- data.frame()
 # List of country names (folders inside the "data" directory)
 countries <- c( "poland","ukraine", "uruguay", "ireland", "bangladesh",
                "tanzania", "mozambique", "indonesia", "dcongo", "paraguay")
-countries
 # Loop through each country's folder and combine all CSV files
 for (country in countries) {
   
@@ -135,7 +132,8 @@ info: all belong to aves class
 order, family, genus, species, stateProvince, individualCount, decimalLatitude, elevation,decimalLongitude, day,month, year, country
 
 ```{r}
-filtered_bird_orders <- bird_orders |> 
+filtered_bird_orders <- bird_orders |>
+  filter(order %in% orders)|> 
   select(order, family, genus, species, stateProvince, individualCount, decimalLatitude, elevation,decimalLongitude, day,month, year, country)
 head(filtered_bird_orders)
 ```
@@ -151,8 +149,16 @@ filtered_bird_orders$country <- tolower(filtered_bird_orders$country)
 
 filtered_forest_data <- forest_data %>%
   filter(iso %in% country_mapping$iso) %>%   # Keep only rows with matching ISO codes
-  left_join(country_mapping, by = "iso")  
+  left_join(country_mapping, by = "iso")
+```
 
+```{r}
+forest_change <- filtered_forest_data |> 
+  select(country,gain,loss,gfw_area__ha )
+```
+
+
+```{r}
 # Combine the datasets based on the "country" column
 combined_data <- left_join(filtered_bird_orders, filtered_forest_data, by = "country")
 
@@ -164,6 +170,8 @@ write.csv(combined_data, "filtered_forest_data.csv")
 joined_data <- read.csv("filtered_forest_data.csv")
 joined_data
 ```
+
+
 
 ```{r}
 #get rid of NA's in joined data
@@ -178,88 +186,114 @@ country_density_map
 ```
 
 ```{r}
-library(dplyr)
 library(sf)
 library(tidyr)
 library(rnaturalearth)
 ```
 
 ```{r}
-# Load world map data (you can use rnaturalearth for this)
-world_map <- rnaturalearth::ne_countries(scale = "medium", returnclass = "sf")
+# # Determine the global range of individualCount for consistent scaling
+# global_size_range <- range(country_density_map$individualCount, na.rm = TRUE)
+# 
+# # Iterate through each bird order and create maps for each country and year
+# bird_orders <- unique(country_density_map$order)
+# 
+# # Create a list to store plots
+# plots <- list()
+# c = 0
+# for (order1 in bird_orders) {
+#   for (country1 in countries) {
+#     for (year1 in years) {
+#       c <- c + 1
+#       # Filter data for the specific bird order, year, and country
+#       specific_data <- country_density_map |>
+#         filter(order == order1, year == year1, country == country1)
+#       
+#       # Join country map with bird observation data
+#       country_map <- country_maps |> filter(name_long == country1)
+# 
+#       # Create the plot
+#       plots[[c]] <-
+#         ggplot() +
+#         geom_sf(data = country_map, fill = "gray90", color = "black") +
+#         geom_point(data = specific_data, 
+#                    aes(x = decimalLongitude, y = decimalLatitude, size = individualCount),
+#                    alpha = 0.7) +
+#         scale_size_continuous(name = "Count", range = c(1, 10), limits = global_size_range) +
+#         ggtitle(paste("Bird Order:", order1, "Year:", year1, "Country:", country1)) +
+#         theme_bw()
+#       
+#       ggsave(paste("plot_geodistribution/bird_order:", order1, "year:", year1, "country:", country1,".png"), plots[[c]], width = 10, height = 7)
+# 
+#     }
+#   }
+# }
 
-# Filter world map for selected countries
-country_maps <- world_map |> filter(name_long %in% countries)
+```
 
-# Iterate through each bird order and create maps for each country and year
-bird_orders <- unique(country_density_map$order)
 
-# Create a list to store plots
-plots <- list()
-
-for (bird_order in bird_orders) {
-  for (year in years) {
-    for (country in countries) {
-      # Filter data for the specific bird order, year, and country
-      specific_data <- country_density_map |>
-        filter(order == bird_order, year == year, country == country)
-      
-      # Join country map with bird observation data
-      country_map <- country_maps |> filter(name_long == country)
-
-      # Create the plot
-      p <- ggplot() +
-        geom_sf(data = country_map, fill = "grey90", color = "black") +
-        geom_point(data = specific_data, 
-                   aes(x = decimalLongitude, y = decimalLatitude, size = individualCount),
-                   alpha = 0.7) +
-        scale_size_continuous(name = "Count", range = c(1, 10)) +
-        ggtitle(paste("Bird Order:", bird_order, "Year:", year, "Country:", country)) +
-        theme_minimal()
-
-      # Save the plot in the list
-      plots[[paste(bird_order, year, country, sep = "_")]] <- p
-    }
-  }
-}
+```{r}
 # ggsave("bird_density_map.png", plots[[1]], width = 10, height = 7)
 # Example: Display the first plot
-print(plots[[111]])
-
-```
-
-
-```{r}
-# Verify data for Poland across the years
-poland_data <- joined_data |>
-  filter(country == "poland", year %in% years, order %in% order)
-
-# Print a summary of the data for Poland
-summary(poland_data)
-
-# Check distinct combinations of year and observation locations (latitude/longitude)
-distinct_poland_data <- poland_data |>
-  select(year, decimalLatitude, decimalLongitude, individualCount) |>
-  distinct()
-
-# Print the distinct combinations
-print(distinct_poland_data)
-
-# Check the total individualCount per year for Poland
-counts_per_year <- poland_data |>
-  group_by(year) |>
-  summarise(total_count = sum(individualCount, na.rm = TRUE))
-
-# Print total counts
-print(counts_per_year)
-
-```
-
-
-```{r}
+print(length(plots))
 print(plots[[1]])
-print(plots[[11]])
-print(plots[[31]])
+print(plots[[2]])
+print(plots[[3]])
+
+```
+
+
+```{r}
+# Calculate the global maximum change
+max_change <- filtered_forest_data |> 
+  mutate(
+    initial_forest = as.numeric(gfw_area__ha),
+    final_forest = as.numeric(gfw_area__ha) - as.numeric(loss) + as.numeric(gain),
+    change = final_forest - initial_forest
+  ) |> 
+  summarise(max_change = max(abs(change), na.rm = TRUE)) |> 
+  pull(max_change)
+
+forest_change <- filtered_forest_data |> 
+  mutate(
+    initial_forest = as.numeric(gfw_area__ha),
+    final_forest = as.numeric(gfw_area__ha) - as.numeric(loss) + as.numeric(gain),
+    change = final_forest - initial_forest,
+    color_intensity = abs(change) / max_change,
+    line_color = ifelse(change > 0, 
+                        scales::col_numeric("green", domain = c(0, 1))(color_intensity), 
+                        scales::col_numeric("red", domain = c(0, 1))(color_intensity))
+  ) |> 
+  select(country, initial_forest, final_forest, change, line_color) |>
+  pivot_longer(cols = c(initial_forest, final_forest), 
+               names_to = "year", 
+               values_to = "forest_area") |>
+  mutate(year = recode(year, 
+                       initial_forest = "2000", 
+                       final_forest = "2020"))
+
+# Create a single ggplot for forest change across 10 countries
+forest_change_plot <- ggplot(forest_change, aes(x = year, y = forest_area, group = country)) +
+  geom_line(aes(color = line_color), size = 1.2) +
+  geom_point(aes(color = line_color), size = 3) +
+  scale_color_identity() +
+  geom_text(data = forest_change |> filter(year == "2020"), 
+            aes(label = country, x = year, y = forest_area, color = line_color),
+            hjust = -0.2, size = 3) +
+  ggtitle("Forest Area Change (2000 vs 2020) Across Countries") +
+  xlab("Year") +
+  ylab("Forest Area (ha)") +
+  theme_minimal()
+
+# Display the plot
+print(forest_change_plot)
+
+
+```
+
+
+```{r}
+print(length(plots))
 ```
 
 
@@ -274,31 +308,173 @@ order_counts <- joined_data %>%
 order_counts
 ```
 
+```{r}
+# #visualize geographical distribution with log normalized data
+# country_density_map_logscale <- country_density_map|>
+#   mutate(
+#     log_count = log1p(individualCount)  # log1p handles zero counts
+#   )
+# 
+# global_size_range <- range(country_density_map_logscale$log_count, na.rm = TRUE)
+# 
+# # Iterate through each bird order and create maps for each country and year
+# bird_orders <- unique(country_density_map_logscale$order)
+# 
+# # Create a list to store plots
+# plots <- list()
+# c = 0
+# for (order1 in bird_orders) {
+#   for (country1 in countries) {
+#     for (year1 in years) {
+#       c <- c + 1
+#       # Filter data for the specific bird order, year, and country
+#       specific_data <- country_density_map_logscale |>
+#         filter(order == order1, year == year1, country == country1)
+#       
+#       # Join country map with bird observation data
+#       country_map <- country_maps |> filter(name_long == country1)
+# 
+#       # Create the plot
+#       plots[[c]] <-
+#         ggplot() +
+#         geom_sf(data = country_map, fill = "gray90", color = "black") +
+#         geom_point(data = specific_data, 
+#                    aes(x = decimalLongitude, y = decimalLatitude, size = individualCount),
+#                    alpha = 0.7) +
+#         scale_size_continuous(name = "Count", range = c(1, 10), limits = global_size_range) +
+#         ggtitle(paste("Bird Order:", order1, "Year:", year1, "Country:", country1)) +
+#         theme_bw()
+#       
+#       ggsave(paste("plot_geodistribution_logscale/bird_order:", order1, "year:", year1, "country:", country1,".png"), plots[[c]], width = 10, height = 7)
+# 
+#     }
+#   }
+# }
+
+```
+
 
 ```{r}
 # Merge aggregated counts back with deforestation data
-model_data <- joined_data %>%
+model_data <- joined_data1 %>%
   select(country, year, iso, stable, loss, gain, disturb, net, change, gfw_area__ha) %>%
   distinct() %>%
   inner_join(order_counts, by = c("country", "year"))
 
-head(model_data, 50)
+#log normalizes the counts to take into account discrepancies in effort put into observation between 2000,2010  and 2020
+model_data_log <- model_data|>
+  mutate(
+    log_count = log1p(order_count)  # log1p handles zero counts
+  )
+model_data_log
 ```
+
+```{r}
+model_data_log_normalized <- model_data_log |> 
+  mutate(
+    scaled_log_count = (log_count - min(log_count, na.rm = TRUE)) / 
+                       (max(log_count, na.rm = TRUE) - min(log_count, na.rm = TRUE))
+  )
+
+model_data_log_normalized
+```
+
+```{r}
+model_data_log_normalized_bins <- model_data_log_normalized |>
+  mutate(
+    scaled_log_count_bins = cut(
+      scaled_log_count,
+      breaks = seq(0, 1, length.out = 11),  # 10 intervals
+      labels = paste0("b", 1:10),       # Create labels for the bins
+      include.lowest = TRUE
+    )
+  )
+model_data_log_normalized_bins
+```
+
 
 ```{r}
 set.seed(123)  # For reproducibility
 library(caret)
 
-# Split the data into training and testing sets
-split_index <- createDataPartition(model_data$order_count, p = 0.8, list = FALSE)
-train_data <- model_data[split_index, ]
-test_data <- model_data[-split_index, ]
+# Perform an initial split
+split_index <- initial_split(model_data_log_normalized_bins, prop = 0.8)
+
+# Extract training and test sets
+train_data <- training(split_index)
+test_data <- testing(split_index)
 
 ```
 
 ```{r}
+library(e1071)
+
+svm_recipe <-
+  recipe(scaled_log_count_bins ~ stable + loss + gain + net + change + gfw_area__ha + order + year + country, 
+         data = model_data_log_normalized_bins) |>
+  step_mutate(country = as.factor(country)) |>
+  step_dummy(country, one_hot = TRUE) |>
+  step_mutate(order = as.factor(order)) |>
+  step_dummy(order, one_hot = TRUE) |>
+  step_mutate(year = factor(year, levels = c(2000, 2010, 2020)))
+
+
+svm_pol <- svm_poly(cost = tune(), degree= tune()) |>
+  set_engine("kernlab") |>
+  set_mode("classification")
+
+svm_pol_wflow <- workflow() |>
+  add_model(svm_pol) |>
+  add_recipe(svm_recipe)
+
+folds_pol <- vfold_cv(train_data, v = 4)
+
+# the tuned parameters also have default values you can use
+grid_pol <- grid_regular(cost(), degree(c(1,5)), levels = 5)
+
+svm_pol_tune <- 
+  svm_pol_wflow |>
+  tune_grid(resamples = folds_pol, grid = grid_pol)
+
+
+svm_metrics_pol <- collect_metrics(svm_pol_tune)
+accuracy_results_pol <- svm_metrics_pol |> 
+  filter(.metric == "accuracy")
+print(accuracy_results_pol)
+
+```
+
+
+```{r}
 library(randomForest)
-library(caret)
+ rf_recipe <-
+  recipe(scaled_log_count_bins ~ stable + loss + gain + net + change + gfw_area__ha + order + year + country, 
+         data = model_data_log_normalized_bins)
+
+carseats_rf <- rand_forest(mtry = 10) |>
+  set_engine("ranger", importance="permutation") |>
+  set_mode("regression")
+
+carseats_rf_wflow <- workflow() |>
+  add_model(carseats_rf) |>
+  add_recipe(carseats_recipe)
+
+carseats_rf_fit <- 
+  carseats_rf_wflow |>
+  fit(data = carseats_train)
+
+carseats_rf_preds <- predict(carseats_rf_fit, new_data = carseats_test) |>
+  bind_cols(carseats_test)
+
+# Step 4: Calculate MSE for each model
+carseats_rf_mse <- carseats_rf_preds |>
+  metrics(truth = Sales, estimate = .pred) |>
+  filter(.metric == "rmse") |>
+  pull(.estimate)
+
+carseats_rf_mse
+
+
 
 # Random forest model with tuning
 rf_model <- train(
@@ -323,25 +499,7 @@ plot(rf_model)
 ```
 
 
-```{r}
-library(e1071)
 
-# SVM model with tuning
-svm_model <- train(
-  order_count ~ stable + loss + gain + disturb + net + change + gfw_area__ha,
-  data = train_data,
-  method = "svmRadial",
-  trControl = trainControl(method = "cv", number = 10),  # 10-fold cross-validation
-  tuneGrid = expand.grid(sigma = seq(0.01, 0.1, length.out = 5), C = seq(0.1, 1, length.out = 5))
-)
-
-# Print results
-print(svm_model)
-
-# Visualize SVM model performance
-plot(svm_model)
-
-```
 
 ```{r}
 #calculate prediction accuracy
