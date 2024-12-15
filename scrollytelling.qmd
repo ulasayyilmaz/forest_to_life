@@ -1,10 +1,16 @@
 ---
 title: Can Change in Forest Mass Across Time Predict Biodiversity?
-format: closeread-html
+format: 
+  closeread-html:
+    embed-resources: true
 ---
 
+
 :::{.cr-section}Introduction
-Biodiversity of the world makes living in the world a wondrous experience, and is crucial for survival of human beings. The world houses countless complex interactions between different species that maintain a delicate balance for the sustenance of life. This balance has been preserved for the past millions of years with change in dynamics that resulted in extinction of some species and evolution of others. 
+:::{#cr-rf_mse}
+![random_forest_error](images/rf_rms.png)
+:::
+Biodiversity of the world makes living in the world a wondrous experience, and is crucial for survival of human beings. The world houses countless complex interactions between different species that maintain a delicate balance for the sustenance of life. This balance has been preserved for the past millions of years with change in dynamics that resulted in extinction of some species and evolution of others. @cr-rf_mse
 
 With human-kind's taking precedence in the recent world history, this million year-old ecosystem balance started to experience intense fluctuations. What started with the Industrial Revolution led to a massive emission of green house gasses that endangered the Ozone Layer and gradually raised the temperature of the Earth through various mechanisms. Moreover, humans have shown small regard for life of other beings for the sake of earning money over them, causing the extinction and endangerment of so many including ...,...,... The harm committed by humans on nature include massive clearings of the forest and converting those lands into fertile farm-lands. This, together with wildfires, results in accelerating rates of deforestation, especially at the critical oxygen-producing regions including the Congo Rainforest and the Amazon Rainforest. 
 
@@ -40,8 +46,22 @@ Lastly, the GBIF database offers observations starting 1900, all the way until t
 #it's currently implemented to predict the exact value of bird order counts. Change the dataframe such that instead of bird counts
 #1. we have bird count change from 2000-2020. So for each bird order for each country, there will be one value.
 #We intend to find correlations, to see if deforestation parameters can predict change in population of a bird order by being consistent across countries. 
-6. We analyzed the networks performance, concluded that we expect some correlation for bird species inhabiting forests. 
-7. Make creative visuals. Make further assumptions.
+6. We analyzed the networks performance, concluded that we expect some correlation for bird species inhabiting forests. We trained 2 SVM models, one with the radial basis kernel and the other with the polynomial kernel. We trained 2 random forests, one for regression, one for classification. We trained a single knn on a classification task. 
+7. For all of our models, we found minimum correlation between some variables. (elaborate)
+
+While this work doesn't purport any direct correlation between changes in forest size and biodiversity of birds, there are many liitations to this study that might have been the reason for a lack of correlation. Somme of this study's limitation's include disproportionate amount of observations between 2000 and 2020. There are only a few observations in 2000, and so many observations of birds in 2020, so the models struggled to learn patterns to distinguish between different countries and species, where the year always was the biggest predictor, regardless of taking log values and normalizing. So when I see an enourmous increase between 2000,2020, in a species, it doesn't imply a major increase in animal's population, but the number of observation. @cr-rf_geodist1 @cr-rf_geodist2
+
+In order to tackle this problem, first
+i. on the model_data, which is the grouped (country, year, order) summarize n() for count, I applied log function to order_counts, so that the increase from 2000 to 2010 is not as sharp, implying that the bird populations don't increase exponentially: log_count variable
+ii. on the log-scaled data called model_data_log, I normalized each log_count globally between 0-1.
+
+:::{#cr-rf_geodist1}
+![geodist1](images/poland_geo_2020_normalized.png)
+:::
+:::{#cr-rf_geodist2}
+![poland_2020_geodistribution.png](images/poland_geo_normalized_2000.png)
+:::
+
 
 Thank you for following along. This work was done by Ulas Ayyilmaz and Ishika Keswani as a  final project in our Computational Statistics Class, led by Jo Hardin <3. 
 

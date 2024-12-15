@@ -167,6 +167,13 @@ library(rnaturalearth)
 ```
 
 ```{r}
+order_counts <- joined_data1 %>%
+  group_by(order, country, year) %>%
+  summarize(order_count = sum(individualCount), .groups = "drop")
+library(dplyr)
+```
+
+```{r}
 country_density_map <- joined_data1 |> 
   group_by(country,order,year)
 
@@ -272,62 +279,8 @@ print(forest_change_plot)
 
 ```
 
-```{r}
-# Replace NA values in individual_count with 0
-joined_data1$individualCount <- ifelse(is.na(joined_data1$individualCount), 0, joined_data1$individualCount)
-# Ensure it is a double type
-joined_data1$individualCount <- as.double(joined_data1$individualCount)
-
-order_counts <- joined_data1 %>%
-  group_by(order, country, year) %>%
-  summarize(order_count = sum(individualCount), .groups = "drop")
-order_counts
-# List of required years
-required_years <- c(2000, 2010, 2020)
-
-orders <- unique(joined_data1$order)
-
-# Iterate through each unique combination of order and country
-for (cur_country in countries) {
-  for (cur_order in orders)
-  
-  # Filter the rows for the current order and country
-  subset_data <- joined_data1[
-    joined_data1$order == cur_order & joined_data1$country == cur_country, 
-  ]
-  # Identify missing years
-  missing_years <- setdiff(required_years, subset_data$year)
-  
-  # For each missing year, create a new row with `order_count` set to 0
-  if (length(missing_years) > 0) {
-      for (year in missing_years) {
-        # Create a new row with all columns matching `joined_data1`
-        new_row <- subset_data[1, ]  # Use the first row as a template
-        new_row$year <- year         # Set the missing year
-        new_row$order_count <- 0     # Set `order_count` to 0
-        
-        # Replace all other values with NA
-        new_row <- new_row %>%
-          mutate(across(everything(), ~ NA)) %>%
-          mutate(order = cur_order, country = cur_country, year = year, order_count = 0)
-        
-        # Append the new row to `new_data`
-        new_data <- bind_rows(new_data, new_row)
-    }
-  }
-  
-  # Add the completed subset to the new data
-  new_data <- rbind(new_data, subset_data)
-}
-
-# Arrange the new data by order, country, and year for better readability
-new_data <- new_data[order(new_data$order, new_data$country, new_data$year), ]
-
-# View the completed dataset
-print(new_data)
 
 
-```
 
 ```{r}
 #visualize geographical distribution with log normalized data
@@ -382,10 +335,10 @@ plots1[[3]]
 
 ```{r}
 # # Merge aggregated counts back with deforestation data
-# model_data <- joined_data1 %>%
-#   select(country, year, iso, stable, loss, gain, disturb, net, change, gfw_area__ha) %>%
-#   distinct() %>%
-#   inner_join(order_counts, by = c("country", "year"))
+model_data <- joined_data1 %>%
+  select(country, year, iso, stable, loss, gain, disturb, net, change, gfw_area__ha) %>%
+  distinct() %>%
+  inner_join(order_counts, by = c("country", "year"))
 
 #log normalizes the counts to take into account discrepancies in effort put into observation between 2000,2010  and 2020
 model_data_log <- model_data|>
@@ -425,15 +378,23 @@ model_data_log_normalized_bins|> group_by(country) |>
 ```
 
 ```{r}
-set.seed(123)  # For reproducibility
+set.seed(12)  # For reproducibility
 library(caret)
 
 # Perform an initial split
-split_index <- initial_split(model_data_log_normalized_bins, prop = 0.7)
+split_index_bins <- initial_split(model_data_log_normalized_bins, prop = 0.8)
 
 # Extract training and test sets
-train_data_bins <- training(split_index)
-test_data_bins <- testing(split_index)
+train_data_bins <- training(split_index_bins)
+test_data_bins <- testing(split_index_bins)
+
+set.seed(23)
+# Perform an initial split
+split_index <- initial_split(model_data_log_normalized, prop = 0.8)
+
+# Extract training and test sets
+train_data <- training(split_index)
+test_data <- testing(split_index)
 
 ```
 
@@ -588,15 +549,9 @@ model_data_log_normalized <- model_data_log_normalized |>
     year = factor(year, levels = c(2000, 2010, 2020))
   )
 
-# Split Data
-set.seed(123)  # Ensure reproducibility
-split_index_rf <- initial_split(model_data_log_normalized, prop = 0.8)
-train_data_rf <- training(split_index)
-test_data_rf <- testing(split_index)
-
 # Step 2: Define Recipe
 rf_recipe <- recipe(scaled_log_count ~ stable + loss + gain + net + change + gfw_area__ha + order + year + country, 
-                    data = train_data_rf) |>
+                    data = train_data) |>
   step_dummy(all_nominal(), -all_outcomes())  # Dummy-encode categorical variables
 
 # Step 3: Define Model and Workflow
@@ -610,11 +565,11 @@ rf_wflow <- workflow() |>
 
 # Step 4: Fit Model
 rf_fit <- rf_wflow |>
-  fit(data = train_data_rf)
+  fit(data = train_data)
 
 # Step 5: Predict on Test Data
-rf_preds <- predict(rf_fit, new_data = test_data_rf) |>
-  bind_cols(test_data_rf)
+rf_preds <- predict(rf_fit, new_data = test_data) |>
+  bind_cols(test_data)
 
 # Step 6: Evaluate Model Performance (MSE)
 rf_metrics <- rf_preds |>
@@ -640,13 +595,10 @@ I realize that the year 2020 is very predictive, and the country tanzania very p
 ```{r}
 # Split Data
 set.seed(123)  # Ensure reproducibility
-split_index_rf1 <- initial_split(model_data_log_normalized_bins, prop = 0.8)
-train_data_rf1 <- training(split_index_rf1)
-test_data_rf1 <- testing(split_index_rf1)
 
 # Step 2: Define Recipe
 rf_recipe1 <- recipe(scaled_log_count_bins ~ stable + loss + gain + net + change + gfw_area__ha + order + year + country, 
-                    data = train_data_rf1) |>
+                    data = train_data_bins) |>
   step_dummy(all_nominal(), -all_outcomes())  # Dummy-encode categorical variables
 
 # Step 3: Define Model and Workflow
@@ -660,11 +612,11 @@ rf_wflow1 <- workflow() |>
 
 # Step 4: Fit Model
 rf_fit1 <- rf_wflow1 |>
-  fit(data = train_data_rf1)
+  fit(data = train_data_bins)
 
-# Step 5: Predict on Test Data
-rf_preds1 <- predict(rf_fit1, new_data = train_data_rf1) |>
-  bind_cols(train_data_rf1)
+# Step 5: Predict on Train Data
+rf_preds1 <- predict(rf_fit1, new_data = train_data_bins) |>
+  bind_cols(train_data_bins)
 
 # Step 6: Evaluate Model Performance (MSE)
 rf_metrics1 <- rf_preds1 |>
@@ -678,8 +630,8 @@ rf_mse <- rf_metrics1 |>
 rf_mse
 
 # Step 5: Predict on Test Data
-rf_preds2 <- predict(rf_fit1, new_data = test_data_rf1) |>
-  bind_cols(test_data_rf1)
+rf_preds2 <- predict(rf_fit1, new_data = test_data_bins) |>
+  bind_cols(test_data_bins)
 
 # Step 6: Evaluate Model Performance (MSE)
 rf_metrics2 <- rf_preds2 |>
@@ -696,6 +648,7 @@ rf_mse2 <- rf_metrics2 |>
 library(vip)
 vip(rf_fit1)
 ```
+
 ```{r}
 library(ggplot2)
 library(tidyr)
@@ -751,25 +704,22 @@ ggplot(conf_matrix_tibble, aes(x = Prediction, y = Truth, fill = n)) +
 ```{r}
 # KNN model with tuning
 knn_recipe <- recipe(scaled_log_count_bins ~ stable + loss + gain + net + change + gfw_area__ha + year, 
-                    data = train_data_rf1) |>
-  step_normalize(all_predictors())
+                    data = train_data_bins)
 
 knn_model <- nearest_neighbor() |>
   set_engine("kknn") |>
   set_mode("classification")
-knn_model
 
 
 knn_wflow <- workflow() |>
   add_model(knn_model) |>
   add_recipe(knn_recipe)
-knn_wflow
 
-fit_knn <- knn_wflow |> fit(data = train_data)
+fit_knn <- knn_wflow |> fit(data = train_data_bins)
 
 set.seed(470)
-knn_vfold <- vfold_cv(train_data,
-                          v = 5, strata = scaled_log_count)
+knn_vfold <- vfold_cv(train_data_bins,
+                          v = 5, strata = scaled_log_count_bins)
 k_grid <- data.frame(neighbors = c(1,3,5))
 
 knn_tune <- nearest_neighbor(neighbors = tune()) |>
@@ -789,3 +739,6 @@ knn_wflow_tune |>
   filter(.metric == "accuracy")
 
 ```
+
+
+

@@ -86,5 +86,11 @@ Wedlands
 Ciconiiformes (64,794): Storks. Found in wetlands and grasslands.
 
 6. I just figured out that entries belonging to year 2000 are significantly less then entries belonging to year 2020. So when I see an enourmous increase between 2000,2020, in a species, it doesn't imply a major increase in animal's population. 
+In order to tackle this problem, first
+i. on the model_data, which is the grouped (country, year, order) summarize n() for count, I applied log function to order_counts, so that the increase from 2000 to 2010 is not as sharp, implying that the bird populations don't increase exponentially: log_count variable
+ii. on the log-scaled data called model_data_log, I normalized each log_count globally between 0-1.
 
-
+# Visualize SVM model performance
+svm model only predicts the b3 class, which has the most observation(4) compared to other classes. 
+knn predicts well for train dataset, not so well but still above average for test.
+random forest
