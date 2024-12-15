@@ -46,9 +46,6 @@ top_5_net_asc <- forest_data |>
 top_5_net_desc # poland, ukraine, uruguay, ireland, bangladesh
 top_5_net_asc#tanzania, Mozambique, indonesia, DCcongo, paraguay
 ```
-```{r}
-
-```
 
 
 order of interest (check exist for each country)
@@ -82,7 +79,6 @@ orders <- c("Coraciiformes","Strigiformes","Galliformes","Ciconiiformes")
 
 ```{r}
 # Load necessary library
-
 # Initialize an empty dataframe to store the combined data
 combined_data <- data.frame()
 
@@ -145,44 +141,23 @@ country_mapping <- data.frame(
               "tanzania", "mozambique", "indonesia", "dcongo", "paraguay")
 )
 
-filtered_bird_orders$country <- tolower(filtered_bird_orders$country)
-
 filtered_forest_data <- forest_data %>%
   filter(iso %in% country_mapping$iso) %>%   # Keep only rows with matching ISO codes
   left_join(country_mapping, by = "iso")
 ```
 
-```{r}
-forest_change <- filtered_forest_data |> 
-  select(country,gain,loss,gfw_area__ha )
-```
-
 
 ```{r}
 # Combine the datasets based on the "country" column
-combined_data <- left_join(filtered_bird_orders, filtered_forest_data, by = "country")
+joined_data <- left_join(filtered_bird_orders, filtered_forest_data, by = "country")
 
 # Output the combined dataset
-write.csv(combined_data, "filtered_forest_data.csv")
-```
-
-```{r}
-joined_data <- read.csv("filtered_forest_data.csv")
+write.csv(joined_data, "filtered_forest_data.csv")
 joined_data
-```
 
-
-
-```{r}
 #get rid of NA's in joined data
 joined_data1 <- joined_data |>
   filter(!is.na(individualCount))
-
-country_density_map <- joined_data1 |> 
-  group_by(country,order,year)
-
-country_density_map
-
 ```
 
 ```{r}
@@ -192,42 +167,48 @@ library(rnaturalearth)
 ```
 
 ```{r}
-# # Determine the global range of individualCount for consistent scaling
-# global_size_range <- range(country_density_map$individualCount, na.rm = TRUE)
-# 
-# # Iterate through each bird order and create maps for each country and year
-# bird_orders <- unique(country_density_map$order)
-# 
-# # Create a list to store plots
-# plots <- list()
-# c = 0
-# for (order1 in bird_orders) {
-#   for (country1 in countries) {
-#     for (year1 in years) {
-#       c <- c + 1
-#       # Filter data for the specific bird order, year, and country
-#       specific_data <- country_density_map |>
-#         filter(order == order1, year == year1, country == country1)
-#       
-#       # Join country map with bird observation data
-#       country_map <- country_maps |> filter(name_long == country1)
-# 
-#       # Create the plot
-#       plots[[c]] <-
-#         ggplot() +
-#         geom_sf(data = country_map, fill = "gray90", color = "black") +
-#         geom_point(data = specific_data, 
-#                    aes(x = decimalLongitude, y = decimalLatitude, size = individualCount),
-#                    alpha = 0.7) +
-#         scale_size_continuous(name = "Count", range = c(1, 10), limits = global_size_range) +
-#         ggtitle(paste("Bird Order:", order1, "Year:", year1, "Country:", country1)) +
-#         theme_bw()
-#       
-#       ggsave(paste("plot_geodistribution/bird_order:", order1, "year:", year1, "country:", country1,".png"), plots[[c]], width = 10, height = 7)
-# 
-#     }
-#   }
-# }
+country_density_map <- joined_data1 |> 
+  group_by(country,order,year)
+
+# Determine the global range of individualCount for consistent scaling
+global_size_range <- range(country_density_map$individualCount, na.rm = TRUE)
+
+# Iterate through each bird order and create maps for each country and year
+bird_orders <- unique(country_density_map$order)
+
+# Create a list to store plots
+plots <- list()
+c = 0
+world_map <- rnaturalearth::ne_countries(scale = "medium", returnclass = "sf")
+country_maps <- world_map |> filter(name_long %in% countries)
+
+for (order1 in bird_orders) {
+  for (country1 in countries) {
+    for (year1 in years) {
+      c <- c + 1
+      # Filter data for the specific bird order, year, and country
+      specific_data <- country_density_map |>
+        filter(order == order1, year == year1, country == country1)
+
+      # Join country map with bird observation data
+      country_map <- country_maps |> filter(name_long == country1)
+
+      # Create the plot
+      plots[[c]] <-
+        ggplot() +
+        geom_sf(data = country_map, fill = "gray90", color = "black") +
+        geom_point(data = specific_data,
+                   aes(x = decimalLongitude, y = decimalLatitude, size = individualCount),
+                   alpha = 0.7) +
+        scale_size_continuous(name = "Count", range = c(1, 10), limits = global_size_range) +
+        ggtitle(paste("Bird Order:", order1, "Year:", year1, "Country:", country1)) +
+        theme_bw()
+
+      ggsave(paste("plot_geodistribution/bird_order:", order1, "year:", year1, "country:", country1,".png"), plots[[c]], width = 10, height = 7)
+
+    }
+  }
+}
 
 ```
 
@@ -291,75 +272,120 @@ print(forest_change_plot)
 
 ```
 
-
 ```{r}
-print(length(plots))
-```
+# Replace NA values in individual_count with 0
+joined_data1$individualCount <- ifelse(is.na(joined_data1$individualCount), 0, joined_data1$individualCount)
+# Ensure it is a double type
+joined_data1$individualCount <- as.double(joined_data1$individualCount)
 
-
-
-
-```{r}
-# Aggregate bird count by order, country, and year
-order_counts <- joined_data %>%
+order_counts <- joined_data1 %>%
   group_by(order, country, year) %>%
-  summarize(order_count = sum(individualCount, na.rm = TRUE), .groups = "drop")
-
+  summarize(order_count = sum(individualCount), .groups = "drop")
 order_counts
+# List of required years
+required_years <- c(2000, 2010, 2020)
+
+orders <- unique(joined_data1$order)
+
+# Iterate through each unique combination of order and country
+for (cur_country in countries) {
+  for (cur_order in orders)
+  
+  # Filter the rows for the current order and country
+  subset_data <- joined_data1[
+    joined_data1$order == cur_order & joined_data1$country == cur_country, 
+  ]
+  # Identify missing years
+  missing_years <- setdiff(required_years, subset_data$year)
+  
+  # For each missing year, create a new row with `order_count` set to 0
+  if (length(missing_years) > 0) {
+      for (year in missing_years) {
+        # Create a new row with all columns matching `joined_data1`
+        new_row <- subset_data[1, ]  # Use the first row as a template
+        new_row$year <- year         # Set the missing year
+        new_row$order_count <- 0     # Set `order_count` to 0
+        
+        # Replace all other values with NA
+        new_row <- new_row %>%
+          mutate(across(everything(), ~ NA)) %>%
+          mutate(order = cur_order, country = cur_country, year = year, order_count = 0)
+        
+        # Append the new row to `new_data`
+        new_data <- bind_rows(new_data, new_row)
+    }
+  }
+  
+  # Add the completed subset to the new data
+  new_data <- rbind(new_data, subset_data)
+}
+
+# Arrange the new data by order, country, and year for better readability
+new_data <- new_data[order(new_data$order, new_data$country, new_data$year), ]
+
+# View the completed dataset
+print(new_data)
+
+
 ```
 
 ```{r}
-# #visualize geographical distribution with log normalized data
-# country_density_map_logscale <- country_density_map|>
-#   mutate(
-#     log_count = log1p(individualCount)  # log1p handles zero counts
-#   )
-# 
-# global_size_range <- range(country_density_map_logscale$log_count, na.rm = TRUE)
-# 
-# # Iterate through each bird order and create maps for each country and year
-# bird_orders <- unique(country_density_map_logscale$order)
-# 
-# # Create a list to store plots
-# plots <- list()
-# c = 0
-# for (order1 in bird_orders) {
-#   for (country1 in countries) {
-#     for (year1 in years) {
-#       c <- c + 1
-#       # Filter data for the specific bird order, year, and country
-#       specific_data <- country_density_map_logscale |>
-#         filter(order == order1, year == year1, country == country1)
-#       
-#       # Join country map with bird observation data
-#       country_map <- country_maps |> filter(name_long == country1)
-# 
-#       # Create the plot
-#       plots[[c]] <-
-#         ggplot() +
-#         geom_sf(data = country_map, fill = "gray90", color = "black") +
-#         geom_point(data = specific_data, 
-#                    aes(x = decimalLongitude, y = decimalLatitude, size = individualCount),
-#                    alpha = 0.7) +
-#         scale_size_continuous(name = "Count", range = c(1, 10), limits = global_size_range) +
-#         ggtitle(paste("Bird Order:", order1, "Year:", year1, "Country:", country1)) +
-#         theme_bw()
-#       
-#       ggsave(paste("plot_geodistribution_logscale/bird_order:", order1, "year:", year1, "country:", country1,".png"), plots[[c]], width = 10, height = 7)
-# 
-#     }
-#   }
-# }
+#visualize geographical distribution with log normalized data
+country_density_map_logscale <- country_density_map|>
+  mutate(
+    log_count = log1p(individualCount)  # log1p handles zero counts
+  )
+
+global_size_range <- range(country_density_map_logscale$log_count, na.rm = TRUE)
+
+# Iterate through each bird order and create maps for each country and year
+bird_orders <- unique(country_density_map_logscale$order)
+
+# Create a list to store plots
+plots1 <- list()
+c = 0
+for (order1 in bird_orders) {
+  for (country1 in countries) {
+    for (year1 in years) {
+      c <- c + 1
+      # Filter data for the specific bird order, year, and country
+      specific_data <- country_density_map_logscale |>
+        filter(order == order1, year == year1, country == country1)
+
+      # Join country map with bird observation data
+      country_map <- country_maps |> filter(name_long == country1)
+
+      # Create the plot
+      plots1[[c]] <-
+        ggplot() +
+        geom_sf(data = country_map, fill = "gray90", color = "black") +
+        geom_point(data = specific_data,
+                   aes(x = decimalLongitude, y = decimalLatitude, size = individualCount),
+                   alpha = 0.7) +
+        scale_size_continuous(name = "Count", range = c(1, 10), limits = global_size_range) +
+        ggtitle(paste("Bird Order:", order1, "Year:", year1, "Country:", country1)) +
+        theme_bw()
+
+      ggsave(paste("plot_geodistribution_logscale/bird_order:", order1, "year:", year1, "country:", country1,".png"), plots1[[c]], width = 10, height = 7)
+
+    }
+  }
+}
 
 ```
 
+```{r}
+plots1[[1]]
+plots1[[2]]
+plots1[[3]]
+```
 
 ```{r}
-# Merge aggregated counts back with deforestation data
-model_data <- joined_data1 %>%
-  select(country, year, iso, stable, loss, gain, disturb, net, change, gfw_area__ha) %>%
-  distinct() %>%
-  inner_join(order_counts, by = c("country", "year"))
+# # Merge aggregated counts back with deforestation data
+# model_data <- joined_data1 %>%
+#   select(country, year, iso, stable, loss, gain, disturb, net, change, gfw_area__ha) %>%
+#   distinct() %>%
+#   inner_join(order_counts, by = c("country", "year"))
 
 #log normalizes the counts to take into account discrepancies in effort put into observation between 2000,2010  and 2020
 model_data_log <- model_data|>
@@ -379,6 +405,7 @@ model_data_log_normalized <- model_data_log |>
 model_data_log_normalized
 ```
 
+
 ```{r}
 model_data_log_normalized_bins <- model_data_log_normalized |>
   mutate(
@@ -392,19 +419,24 @@ model_data_log_normalized_bins <- model_data_log_normalized |>
 model_data_log_normalized_bins
 ```
 
+```{r}
+model_data_log_normalized_bins|> group_by(country) |> 
+  summarize(year)
+```
 
 ```{r}
 set.seed(123)  # For reproducibility
 library(caret)
 
 # Perform an initial split
-split_index <- initial_split(model_data_log_normalized_bins, prop = 0.8)
+split_index <- initial_split(model_data_log_normalized_bins, prop = 0.7)
 
 # Extract training and test sets
-train_data <- training(split_index)
-test_data <- testing(split_index)
+train_data_bins <- training(split_index)
+test_data_bins <- testing(split_index)
 
 ```
+
 
 ```{r}
 library(e1071)
@@ -427,7 +459,7 @@ svm_pol_wflow <- workflow() |>
   add_model(svm_pol) |>
   add_recipe(svm_recipe)
 
-folds_pol <- vfold_cv(train_data, v = 4)
+folds_pol <- vfold_cv(train_data_bins, v = 4)
 
 # the tuned parameters also have default values you can use
 grid_pol <- grid_regular(cost(), degree(c(1,5)), levels = 5)
@@ -444,185 +476,316 @@ print(accuracy_results_pol)
 
 ```
 
+```{r}
+
+library(tidyr)
+library(ggplot2)
+
+# Step 3: Create a Confusion Matrix with Explicit Levels
+confusion_data <- svm_predictions |>
+  conf_mat(truth = scaled_log_count_bins, estimate = .pred_class)
+
+# Extract the confusion matrix counts as a data frame
+confusion_data_df <- as_tibble(confusion_data$table) |>
+  complete(Truth = paste0("b", 1:10), Prediction = paste0("b", 1:10), fill = list(n = 0))
+
+# Step 4: Plot the Heatmap
+heatmap_plot <- ggplot(confusion_data_df, aes(x = Prediction, y = Truth, fill = n)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(
+    title = "Confusion Matrix Heatmap",
+    x = "Predicted Bin",
+    y = "Actual Bin",
+    fill = "Count"
+  ) +
+  theme_minimal()
+
+print(heatmap_plot)
+
+
+```
 
 ```{r}
-library(randomForest)
- rf_recipe <-
-  recipe(scaled_log_count_bins ~ stable + loss + gain + net + change + gfw_area__ha + order + year + country, 
-         data = model_data_log_normalized_bins)
+# Check prediction distribution
+svm_predictions |>
+  count(.pred_class) |>
+  arrange(desc(n)) |>
+  mutate(proportion = n / sum(n))
 
-carseats_rf <- rand_forest(mtry = 10) |>
-  set_engine("ranger", importance="permutation") |>
-  set_mode("regression")
+# Compare predicted vs actual class distribution
+predicted_distribution <- svm_predictions |>
+  count(.pred_class) |>
+  rename(Predicted = n)
 
-carseats_rf_wflow <- workflow() |>
-  add_model(carseats_rf) |>
-  add_recipe(carseats_recipe)
+actual_distribution <- test_data_bins |>
+  count(scaled_log_count_bins) |>
+  rename(Actual = n)
 
-carseats_rf_fit <- 
-  carseats_rf_wflow |>
-  fit(data = carseats_train)
+comparison <- full_join(predicted_distribution, actual_distribution, 
+                        by = c(".pred_class" = "scaled_log_count_bins")) |>
+  replace_na(list(Predicted = 0, Actual = 0))
 
-carseats_rf_preds <- predict(carseats_rf_fit, new_data = carseats_test) |>
-  bind_cols(carseats_test)
+print(comparison)
+```
 
-# Step 4: Calculate MSE for each model
-carseats_rf_mse <- carseats_rf_preds |>
-  metrics(truth = Sales, estimate = .pred) |>
-  filter(.metric == "rmse") |>
+```{r}
+#SVM RBF
+
+svm_rbf <- svm_rbf(cost = tune(), rbf_sigma= tune()) |>
+  set_engine("kernlab") |>
+  set_mode("classification")
+
+svm_rbf_wflow <- workflow() |>
+  add_model(svm_rbf) |>
+  add_recipe(svm_recipe)
+
+folds_rbf <- vfold_cv(train_data_bins, v = 4)
+
+# the tuned parameters also have default values you can use
+grid_rbf <- grid_regular(cost(), rbf_sigma(), levels = 5)
+
+svm_rbf_tune <- 
+  svm_rbf_wflow |>
+  tune_grid(resamples = folds_rbf, grid = grid_rbf)
+
+svm_metrics_rbf <- collect_metrics(svm_rbf_tune)
+accuracy_results_rbf <- svm_metrics_rbf |> 
+  filter(.metric == "accuracy")
+print(accuracy_results_rbf)
+
+# Step 3: Create a Confusion Matrix with Explicit Levels
+confusion_data <- svm_predictions |>
+  conf_mat(truth = scaled_log_count_bins, estimate = .pred_class)
+
+# Extract the confusion matrix counts as a data frame
+confusion_data_df <- as_tibble(confusion_data$table) |>
+  complete(Truth = paste0("b", 1:10), Prediction = paste0("b", 1:10), fill = list(n = 0))
+
+# Step 4: Plot the Heatmap
+heatmap_plot <- ggplot(confusion_data_df, aes(x = Prediction, y = Truth, fill = n)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(
+    title = "Confusion Matrix Heatmap",
+    x = "Predicted Bin",
+    y = "Actual Bin",
+    fill = "Count"
+  ) +
+  theme_minimal()
+
+print(heatmap_plot)
+
+```
+
+
+
+```{r}
+model_data_log_normalized <- model_data_log_normalized |> 
+  mutate(
+    country = as.factor(country),
+    order = as.factor(order),
+    year = factor(year, levels = c(2000, 2010, 2020))
+  )
+
+# Split Data
+set.seed(123)  # Ensure reproducibility
+split_index_rf <- initial_split(model_data_log_normalized, prop = 0.8)
+train_data_rf <- training(split_index)
+test_data_rf <- testing(split_index)
+
+# Step 2: Define Recipe
+rf_recipe <- recipe(scaled_log_count ~ stable + loss + gain + net + change + gfw_area__ha + order + year + country, 
+                    data = train_data_rf) |>
+  step_dummy(all_nominal(), -all_outcomes())  # Dummy-encode categorical variables
+
+# Step 3: Define Model and Workflow
+rf_model <- rand_forest(mtry = 10, trees = 500) |>  # Define Random Forest model
+  set_engine("ranger", importance = "permutation") |>  # Set engine with permutation importance
+  set_mode("regression")  # Set mode to regression
+
+rf_wflow <- workflow() |>
+  add_model(rf_model) |>
+  add_recipe(rf_recipe)
+
+# Step 4: Fit Model
+rf_fit <- rf_wflow |>
+  fit(data = train_data_rf)
+
+# Step 5: Predict on Test Data
+rf_preds <- predict(rf_fit, new_data = test_data_rf) |>
+  bind_cols(test_data_rf)
+
+# Step 6: Evaluate Model Performance (MSE)
+rf_metrics <- rf_preds |>
+  metrics(truth = scaled_log_count, estimate = .pred)
+
+# Extract MSE
+rf_mse <- rf_metrics |>
+  filter(.metric == "rmse") |>  # You can replace this with "mse" if you need it
+  mutate(mse = .estimate^2) |>  # Convert RMSE to MSE
+  pull(mse)
+
+print(rf_mse)
+
+```
+
+```{r}
+library(vip)
+vip(rf_fit)
+```
+I realize that the year 2020 is very predictive, and the country tanzania very predictive, as both variables have distinctive natures appearantly. The variable that exists for all entries that is the most important is "net". Net change in forest size is somewhat indicative of predicting count.
+
+
+```{r}
+# Split Data
+set.seed(123)  # Ensure reproducibility
+split_index_rf1 <- initial_split(model_data_log_normalized_bins, prop = 0.8)
+train_data_rf1 <- training(split_index_rf1)
+test_data_rf1 <- testing(split_index_rf1)
+
+# Step 2: Define Recipe
+rf_recipe1 <- recipe(scaled_log_count_bins ~ stable + loss + gain + net + change + gfw_area__ha + order + year + country, 
+                    data = train_data_rf1) |>
+  step_dummy(all_nominal(), -all_outcomes())  # Dummy-encode categorical variables
+
+# Step 3: Define Model and Workflow
+rf_model1 <- rand_forest(mtry = 10, trees = 500) |>  # Define Random Forest model
+  set_engine("ranger", importance = "permutation") |>  # Set engine with permutation importance
+  set_mode("classification")  # Set mode to regression
+
+rf_wflow1 <- workflow() |>
+  add_model(rf_model1) |>
+  add_recipe(rf_recipe1)
+
+# Step 4: Fit Model
+rf_fit1 <- rf_wflow1 |>
+  fit(data = train_data_rf1)
+
+# Step 5: Predict on Test Data
+rf_preds1 <- predict(rf_fit1, new_data = train_data_rf1) |>
+  bind_cols(train_data_rf1)
+
+# Step 6: Evaluate Model Performance (MSE)
+rf_metrics1 <- rf_preds1 |>
+  metrics(truth = scaled_log_count_bins, estimate = .pred_class)
+
+# Extract MSE
+rf_mse <- rf_metrics1 |>
+  filter(.metric == "rmse") |>  # You can replace this with "mse" if you need it
   pull(.estimate)
 
-carseats_rf_mse
+rf_mse
 
+# Step 5: Predict on Test Data
+rf_preds2 <- predict(rf_fit1, new_data = test_data_rf1) |>
+  bind_cols(test_data_rf1)
 
+# Step 6: Evaluate Model Performance (MSE)
+rf_metrics2 <- rf_preds2 |>
+  metrics(truth = scaled_log_count_bins, estimate = .pred_class)
 
-# Random forest model with tuning
-rf_model <- train(
-  order_count ~ stable + loss + gain + disturb + net + change + gfw_area__ha,
-  data = train_data,
-  method = "rf",
-  trControl = trainControl(method = "oob", search = "grid"),
-  tuneGrid = expand.grid(mtry = 2:6)  # Test different values of mtry
-)
-
-# Print results
-print(rf_model)
-
-# Visualize the trained random forest model
-plot(rf_model)
+# Extract MSE
+rf_mse2 <- rf_metrics2 |>
+  filter(.metric == "rmse") |>  # You can replace this with "mse" if you need it
+  pull(.estimate)
 
 ```
 
 ```{r}
-#calculate prediction accuracy for train and test data with the trained random forest
-
+library(vip)
+vip(rf_fit1)
 ```
-
-
-
-
 ```{r}
-#calculate prediction accuracy
+library(ggplot2)
+library(tidyr)
+
+# Step 6: Generate Confusion Matrix Data
+conf_matrix <- rf_preds1 |>
+  conf_mat(truth = scaled_log_count_bins, estimate = .pred_class)
+
+# Convert Confusion Matrix to Tibble for Plotting
+conf_matrix_tibble <- as_tibble(conf_matrix$table) |>
+  complete(Truth = paste0("b", 1:10), Prediction = paste0("b", 1:10), fill = list(n = 0))
+
+# Step 7: Heatmap of Predictions vs. Actuals
+ggplot(conf_matrix_tibble, aes(x = Prediction, y = Truth, fill = n)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "steelblue") +
+  labs(
+    title = "Prediction vs. Actual Heatmap Train Data",
+    x = "Predicted Bin",
+    y = "Actual Bin",
+    fill = "Count"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+# Step 6: Generate Confusion Matrix Data
+conf_matrix <- rf_preds2 |>
+  conf_mat(truth = scaled_log_count_bins, estimate = .pred_class)
+
+# Convert Confusion Matrix to Tibble for Plotting
+conf_matrix_tibble <- as_tibble(conf_matrix$table) |>
+  complete(Truth = paste0("b", 1:10), Prediction = paste0("b", 1:10), fill = list(n = 0))
+
+# Step 7: Heatmap of Predictions vs. Actuals
+ggplot(conf_matrix_tibble, aes(x = Prediction, y = Truth, fill = n)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "steelblue") +
+  labs(
+    title = "Prediction vs. Actual Heatmap Test Data",
+    x = "Predicted Bin",
+    y = "Actual Bin",
+    fill = "Count"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
 ```
+
 
 
 ```{r}
 # KNN model with tuning
-knn_model <- train(
-  order_count ~ stable + loss + gain + disturb + net + change + gfw_area__ha,
-  data = train_data,
-  method = "knn",
-  trControl = trainControl(method = "cv", number = 10),  # 10-fold cross-validation
-  tuneGrid = expand.grid(k = seq(1, 15, by = 2))  # Test different values of k
-)
+knn_recipe <- recipe(scaled_log_count_bins ~ stable + loss + gain + net + change + gfw_area__ha + year, 
+                    data = train_data_rf1) |>
+  step_normalize(all_predictors())
 
-# Print results
-print(knn_model)
+knn_model <- nearest_neighbor() |>
+  set_engine("kknn") |>
+  set_mode("classification")
+knn_model
 
-# Visualize the KNN model performance
-plot(knn_model)
 
+knn_wflow <- workflow() |>
+  add_model(knn_model) |>
+  add_recipe(knn_recipe)
+knn_wflow
+
+fit_knn <- knn_wflow |> fit(data = train_data)
+
+set.seed(470)
+knn_vfold <- vfold_cv(train_data,
+                          v = 5, strata = scaled_log_count)
+k_grid <- data.frame(neighbors = c(1,3,5))
+
+knn_tune <- nearest_neighbor(neighbors = tune()) |>
+  set_engine("kknn") |>
+  set_mode("classification")
+
+knn_wflow_tune <- workflow() |>
+  add_model(knn_model) |>
+  add_recipe(knn_recipe)
 ```
 
 ```{r}
-# Make predictions
-rf_preds <- predict(rf_model, test_data)
-knn_preds <- predict(knn_model, test_data)
-svm_preds <- predict(svm_model, test_data)
-
-# Evaluate performance (example: RMSE)
-rf_rmse <- RMSE(rf_preds, test_data$order_count)
-knn_rmse <- RMSE(knn_preds, test_data$order_count)
-svm_rmse <- RMSE(svm_preds, test_data$order_count)
-
-cat("Random Forest RMSE:", rf_rmse, "\n")
-cat("KNN RMSE:", knn_rmse, "\n")
-cat("SVM RMSE:", svm_rmse, "\n")
-```
-
-```{r}
-# Variable importance plot
-varImpPlot(rf_model$finalModel)
-```
-```{r}
-# Predict order_count using each model
-rf_preds <- predict(rf_model, test_data)  # Random Forest predictions
-knn_preds <- predict(knn_model, test_data)  # KNN predictions
-svm_preds <- predict(svm_model, test_data)  # SVM predictions
-
-# Load necessary library for evaluation metrics
-library(Metrics)
-
-# Define metrics
-calc_metrics <- function(actual, predicted) {
-  r_squared <- cor(actual, predicted)^2
-  rmse_val <- rmse(actual, predicted)
-  mae_val <- mae(actual, predicted)
-  
-  return(data.frame(
-    R_Squared = r_squared,
-    RMSE = rmse_val,
-    MAE = mae_val
-  ))
-}
-
-# Calculate metrics for each model
-rf_metrics <- calc_metrics(test_data$order_count, rf_preds)
-knn_metrics <- calc_metrics(test_data$order_count, knn_preds)
-svm_metrics <- calc_metrics(test_data$order_count, svm_preds)
-
-# Combine results for comparison
-model_metrics <- rbind(
-  cbind(Model = "Random Forest", rf_metrics),
-  cbind(Model = "KNN", knn_metrics),
-  cbind(Model = "SVM", svm_metrics)
-)
-
-print(model_metrics)
-
+knn_wflow_tune |>
+  tune_grid(resamples = knn_vfold, 
+           grid = k_grid) |>
+  collect_metrics() |>
+  filter(.metric == "accuracy")
 
 ```
-```{r}
-# Combine actual and predicted data for visualization
-test_results <- test_data %>%
-  mutate(
-    RF_Preds = rf_preds,
-    KNN_Preds = knn_preds,
-    SVM_Preds = svm_preds
-  )
-
-# Create scatter plots for each model
-library(ggplot2)
-
-ggplot(test_results, aes(x = order_count, y = RF_Preds)) +
-  geom_point(color = "blue") +
-  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
-  labs(
-    title = "Random Forest Predictions vs Actual",
-    x = "Actual Order Count",
-    y = "Predicted Order Count"
-  ) +
-  theme_minimal()
-
-ggplot(test_results, aes(x = order_count, y = KNN_Preds)) +
-  geom_point(color = "green") +
-  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
-  labs(
-    title = "KNN Predictions vs Actual",
-    x = "Actual Order Count",
-    y = "Predicted Order Count"
-  ) +
-  theme_minimal()
-
-ggplot(test_results, aes(x = order_count, y = SVM_Preds)) +
-  geom_point(color = "purple") +
-  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
-  labs(
-    title = "SVM Predictions vs Actual",
-    x = "Actual Order Count",
-    y = "Predicted Order Count"
-  ) +
-  theme_minimal()
-
-```
-

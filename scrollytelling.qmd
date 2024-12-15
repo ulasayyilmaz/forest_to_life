@@ -45,4 +45,18 @@ Lastly, the GBIF database offers observations starting 1900, all the way until t
 
 Thank you for following along. This work was done by Ulas Ayyilmaz and Ishika Keswani as a  final project in our Computational Statistics Class, led by Jo Hardin <3. 
 
+all_birds_data is the combined birds data
+filtered_bird_orders (filter for 10 countries)
+filtered_forst_data (filter for 10 countries)
+joined_data
+joined_data!(no NA's in individual_count)
+country_density_map
+country_density_map_logscale with counts in log_scale
+model_data_log
+model_data_log_normalized
+model_data_log_normalized_bins
+
+train_data_bins
+test_data_bins
+
 :::
