@@ -1,15 +1,18 @@
 ---
-title: Can Change in Forest Mass Across Time Predict Biodiversity?
+title: Can Change in Forest Mass Across Time Predict Biodiversity
 format: 
   closeread-html:
     embed-resources: true
 ---
 
-
+ # run this command for closeread to work in terminal directory
+ quarto add qmd-lab/closeread
 :::{.cr-section}Introduction
+
 :::{#cr-rf_mse}
 ![random_forest_error](images/rf_rms.png)
 :::
+
 Biodiversity of the world makes living in the world a wondrous experience, and is crucial for survival of human beings. The world houses countless complex interactions between different species that maintain a delicate balance for the sustenance of life. This balance has been preserved for the past millions of years with change in dynamics that resulted in extinction of some species and evolution of others. @cr-rf_mse
 
 With human-kind's taking precedence in the recent world history, this million year-old ecosystem balance started to experience intense fluctuations. What started with the Industrial Revolution led to a massive emission of green house gasses that endangered the Ozone Layer and gradually raised the temperature of the Earth through various mechanisms. Moreover, humans have shown small regard for life of other beings for the sake of earning money over them, causing the extinction and endangerment of so many including ...,...,... The harm committed by humans on nature include massive clearings of the forest and converting those lands into fertile farm-lands. This, together with wildfires, results in accelerating rates of deforestation, especially at the critical oxygen-producing regions including the Congo Rainforest and the Amazon Rainforest. 
