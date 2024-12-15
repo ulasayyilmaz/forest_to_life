@@ -85,7 +85,6 @@ Galliformes (680,284): Chickens, turkeys, and quails. Found in grasslands, fores
 Wedlands
 Ciconiiformes (64,794): Storks. Found in wetlands and grasslands.
 
-paraguay -
-cod- 
+6. I just figured out that entries belonging to year 2000 are significantly less then entries belonging to year 2020. So when I see an enourmous increase between 2000,2020, in a species, it doesn't imply a major increase in animal's population. 
 
 

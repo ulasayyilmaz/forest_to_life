@@ -46,7 +46,7 @@ top_5_net_asc <- forest_data |>
 top_5_net_desc # poland, ukraine, uruguay, ireland, bangladesh
 top_5_net_asc#tanzania, Mozambique, indonesia, DCcongo, paraguay
 ```
-species of interest (check exist for each country)
+order of interest (check exist for each country)
 
 Most net negative:
 PRY, COD, MOZ, IDN, TZA
@@ -76,7 +76,7 @@ bird_taxon_key
 countries <- c("URY","BLR","UKR","POL","SSD")  # Target countries
 years <- c(2000, 2010, 2020)  # Year range
 eod_dataset_key <- "4fa7b334-ce0d-4e88-aaae-2e0c138d049e"  # EOD datasetKey
-species <- c("Coraciiformes","Strigiformes","Galliformes","Ciconiiformes")
+order <- c("Coraciiformes","Strigiformes","Galliformes","Ciconiiformes")
 ```
 
 
@@ -127,7 +127,7 @@ cat("Combined CSV file created as 'all_bird_orders_data.csv' in the main directo
 
 ```{r}
 bird_orders <- read.csv("all_bird_orders_data.csv")
-bird_orders
+head(bird_orders)
 #596024662,584212444
 ```
 info: all belong to aves class
@@ -137,7 +137,7 @@ order, family, genus, species, stateProvince, individualCount, decimalLatitude, 
 ```{r}
 filtered_bird_orders <- bird_orders |> 
   select(order, family, genus, species, stateProvince, individualCount, decimalLatitude, elevation,decimalLongitude, day,month, year, country)
-filtered_bird_orders
+head(filtered_bird_orders)
 ```
 
 ```{r}
@@ -162,8 +162,107 @@ write.csv(combined_data, "filtered_forest_data.csv")
 
 ```{r}
 joined_data <- read.csv("filtered_forest_data.csv")
-tail(joined_data)
+joined_data
 ```
+
+```{r}
+#get rid of NA's in joined data
+joined_data1 <- joined_data |>
+  filter(!is.na(individualCount))
+
+country_density_map <- joined_data1 |> 
+  group_by(country,order,year)
+
+country_density_map
+
+```
+
+```{r}
+library(dplyr)
+library(sf)
+library(tidyr)
+library(rnaturalearth)
+```
+
+```{r}
+# Load world map data (you can use rnaturalearth for this)
+world_map <- rnaturalearth::ne_countries(scale = "medium", returnclass = "sf")
+
+# Filter world map for selected countries
+country_maps <- world_map |> filter(name_long %in% countries)
+
+# Iterate through each bird order and create maps for each country and year
+bird_orders <- unique(country_density_map$order)
+
+# Create a list to store plots
+plots <- list()
+
+for (bird_order in bird_orders) {
+  for (year in years) {
+    for (country in countries) {
+      # Filter data for the specific bird order, year, and country
+      specific_data <- country_density_map |>
+        filter(order == bird_order, year == year, country == country)
+      
+      # Join country map with bird observation data
+      country_map <- country_maps |> filter(name_long == country)
+
+      # Create the plot
+      p <- ggplot() +
+        geom_sf(data = country_map, fill = "grey90", color = "black") +
+        geom_point(data = specific_data, 
+                   aes(x = decimalLongitude, y = decimalLatitude, size = individualCount),
+                   alpha = 0.7) +
+        scale_size_continuous(name = "Count", range = c(1, 10)) +
+        ggtitle(paste("Bird Order:", bird_order, "Year:", year, "Country:", country)) +
+        theme_minimal()
+
+      # Save the plot in the list
+      plots[[paste(bird_order, year, country, sep = "_")]] <- p
+    }
+  }
+}
+# ggsave("bird_density_map.png", plots[[1]], width = 10, height = 7)
+# Example: Display the first plot
+print(plots[[111]])
+
+```
+
+
+```{r}
+# Verify data for Poland across the years
+poland_data <- joined_data |>
+  filter(country == "poland", year %in% years, order %in% order)
+
+# Print a summary of the data for Poland
+summary(poland_data)
+
+# Check distinct combinations of year and observation locations (latitude/longitude)
+distinct_poland_data <- poland_data |>
+  select(year, decimalLatitude, decimalLongitude, individualCount) |>
+  distinct()
+
+# Print the distinct combinations
+print(distinct_poland_data)
+
+# Check the total individualCount per year for Poland
+counts_per_year <- poland_data |>
+  group_by(year) |>
+  summarise(total_count = sum(individualCount, na.rm = TRUE))
+
+# Print total counts
+print(counts_per_year)
+
+```
+
+
+```{r}
+print(plots[[1]])
+print(plots[[11]])
+print(plots[[31]])
+```
+
+
 
 
 ```{r}
@@ -172,13 +271,18 @@ order_counts <- joined_data %>%
   group_by(order, country, year) %>%
   summarize(order_count = sum(individualCount, na.rm = TRUE), .groups = "drop")
 
+order_counts
+```
+
+
+```{r}
 # Merge aggregated counts back with deforestation data
 model_data <- joined_data %>%
   select(country, year, iso, stable, loss, gain, disturb, net, change, gfw_area__ha) %>%
   distinct() %>%
   inner_join(order_counts, by = c("country", "year"))
 
-model_data
+head(model_data, 50)
 ```
 
 ```{r}
@@ -361,69 +465,6 @@ ggplot(test_results, aes(x = order_count, y = SVM_Preds)) +
     y = "Predicted Order Count"
   ) +
   theme_minimal()
-
-```
-
-
-```{r}
-# Loop through each country and create plots
-for (country in unique(joined_data$country)) {
-  country_data <- joined_data %>% filter(country == !!country)  # Filter data for the country
-  
-  # Create a plot for each bird order
-  p <- ggplot(country_data, aes(x = year, y = individualCount, color = order, group = order)) +
-    geom_line(size = 1.2) +
-    geom_point(size = 3) +
-    facet_wrap(~order, scales = "free_y") +
-    labs(
-      title = paste("Bird Order Counts Over Time in", country),
-      x = "Year",
-      y = "Count of Bird Order"
-    ) +
-    theme_minimal() +
-    theme(legend.position = "bottom")
-  
-  # Save the plot as a file for each country
-  ggsave(
-    filename = paste0("plots/", country, "_bird_order_counts.png"),
-    plot = p,
-    width = 10,
-    height = 6
-  )
-}
-
-```
-```{r}
-library(ggplot2)
-
-# Loop through each country and bird order
-for (country in unique(joined_data$country)) {
-  for (bird_order in unique(joined_data$order)) {
-    # Filter data for the country and bird order
-    country_order_data <- joined_data %>%
-      filter(country == !!country, order == !!bird_order)
-    
-    # Generate a heatmap for each year
-    p <- ggplot(country_order_data, aes(x = decimalLongitude, y = decimalLatitude)) +
-      geom_tile(aes(fill = individualCount), alpha = 0.8) +
-      scale_fill_viridis_c(name = "Count") +
-      facet_wrap(~year) +
-      labs(
-        title = paste(bird_order, "Concentration Heatmap in", country),
-        x = "Longitude",
-        y = "Latitude"
-      ) +
-      theme_minimal()
-    
-    # Save the plot as a file for each country and bird order
-    ggsave(
-      filename = paste0("plots/", country, "_", bird_order, "_heatmap.png"),
-      plot = p,
-      width = 10,
-      height = 6
-    )
-  }
-}
 
 ```
 
