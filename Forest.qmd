@@ -78,7 +78,8 @@ We previously explained how we chose 10 countries, 5 of which has experienced mo
 
 **3.** We calculated the counts of each bird order in each country, and tracked their change across time. The figure to the right showcases normal log of bird counts in Bangladesh for years 2000(left), 2010(center), and 2020(right).
 
-**4.** We visualized the geospatial change of bird order concentrations across time. Our deforestation data don't unfortunately provide detail about the precise location of forest lost and gained, so it's hard to infer correlations between changes in bird number concentrations and changes in forests. 
+**4.** We visualized the geospatial change of bird order concentrations across time. Our deforestation data don't unfortunately provide detail about the precise location of forest lost and gained, so it's hard to infer correlations between changes in bird number concentrations and changes in forests. The image on the right shows two visuals: the one on the left depicts the geographical concentrations of birds observed in 2000, while the one on the right represents those observed in 2020.
+
 ![geobird](images/geo_pol_10_20.png){style="width: 50%; float: right; margin-left: 15px;margin-top: 10px; margin-bottom: 10px;"}
   
 The number of people in every country who engage actively in bird-watching and online reporting of bird sightings increased significantly between 2000 and 2020, possibly as a result of a combination of population increases, more widespread and easy access to the internet and mobile devices, and more awareness of personal and mental benefits of bird watching as a hobby. This meant that although the population of all the bird species is known to have decreased, the number of people seeking out and reporting bird sightings increased, making the data show a supposed increase in the number of birds sighted, when that isn’t truly the case. Thus, we needed to conduct some preliminary work before using the data. 
@@ -105,13 +106,12 @@ We used the binned version of our data to train the support vector machine. Addi
 
 
 - **Model 3:** Classification Random.  Forest![rf_pred](images/rf_accuracy_bins_mtry.png){style="width: 20%; float:right; margin-top: 10px; margin-bottom: 10px;"} ![rf_var_imp_bins](images/randomforest_var_iportance_categorical_bins.png){style="width: 20%; float:right; margin-top: 10px; margin-bottom: 10px;"}
-For our third experiment, we trained a regression random forest tree on predictor variables relating to the forest data - stable, loss, gain, net, change, gfw_area__ha - predictor variables that relate to the bird data- country, order both of which are categorized, and year which is encoded as 0,1,2 for 2000, 2010, and 2020 respectively. We train a random forest and tune the mtry to find the optimal among 1 to 10, and to find the optimal number of trees among the list [1, 50, 100, 150, 200, 250, 300, 350, 400].
+For our third experiment, we trained a regression random forest model using predictor variables related to forest data—stable, loss, gain, net, change, and gfw_area__ha—as well as predictor variables related to bird data, including country, order (both categorical), and year (encoded as 0, 1, and 2 for 2000, 2010, and 2020, respectively).  We train a random forest and tune the mtry to find the optimal among 1 to 10, and to find the optimal number of trees among the list [1, 50, 100, 150, 200, 250, 300, 350, 400].
 Accuracies represented in the figure to the right indicate a higher performance approaching 0.2 for mtry that is 10 or 9, in the upper limit of possible values. 
 
 ![Geodist](images/rf_regression_rmse.png){style="width: 20%; float: right; margin-left: 15px; margin-top: 10px; margin-bottom: 10px;"}![rf_var_imp_bins](images/final_var_importance_rf_regress.png){style="width: 20%; float:right; margin-top: 10px; margin-bottom: 10px;"}
 
 - **Model 4:** Regression Random Forest. Similarly, we trained a random forest with num_trees and mtry in the same range of values. We found that for the regression task, the best rmse was 0.03280191 with the parameters of the best model mtry = 10, trees = 150. The image to the right indicates a negative relationship with mtry and root mean squared error. 
-
 Comparing these two RF models, we realize that a higher mtry value, consistently maps to a better accuracy and lower error. ![rf_pred](images/random_forest_training_prediction.png){style="width: 20%; float:right; margin-top: 10px; margin-bottom: 10px;"}Mtry stands for the number of random selection of variables per each split of the trees in the random forest, and it makes sense that including a greater variety of possible split variables allows for chosing the optimal varibale to split, reducing the error. On the other hand, we see no pattern for the optimal value for num_trees variable. While the classification task preferred trees = 300, the regression task preferred trees = 150. We argue that this makes sense, because our dataset isn't a big dataset, containing only 107 rows as aforementioned, so a higher number of trees doesn't necessarily introduce more learning ofunderlying patterns. 
 
 
@@ -149,5 +149,5 @@ Thank you for following along. This work was done by Ulas Ayyilmaz and Ishika Ke
 
 :::{#discussion style="background-color: #f4cccc; padding: 20px;"}
 Variable names used for future reference:
-*all_birds_data*, *filtered_bird_orders*, *filtered_forest_data*, *joined_data*, *joined_data*, *country_density_map*, *country_density_map_logscale*(counts in log_scale), *model_data_log*, *model_data_log_normalized*, *model_data_log_normalized_bins*, *train_data_bins*, *test_data_bins*
+*all_birds_data*, *filtered_bird_orders*, *filtered_forest_data*, *joined_data*, *joined_data*, *country_density_map*, *country_density_map_logscale*(counts in log_scale), *model_data_log*, *model_data_log_normalized*, *model_data_log_normalized_bins*, *train_data_bins*, *test_data_bins*.
 :::
