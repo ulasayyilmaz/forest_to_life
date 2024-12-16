@@ -4,6 +4,7 @@ format:
   html:
     embed-resources: true
     page-layout: full
+bibliography: bibliography.bib
 ---
 
 <!-- Custom HTML for Header -->
@@ -14,10 +15,11 @@ format:
       <li style="margin-right: 20px;"><a href="#data">Data</a></li>
       <li style="margin-right: 20px;"><a href="#methods">Methods</a></li>
       <li style="margin-right: 20px;"><a href="#limitations">Limitations</a></li>
-      <li><a href="#discussion">Discussions</a></li>
+      <li style="margin-right: 20px;"><a href="#discussion">Discussions</a></li>
+      <li><a href="#citations">Citations</a></li>
     </ul>
   </nav>
-  <img src="images/Pomona_College_seal.png" alt="Logo" style="height: 60px; margin-left: auto;">
+  <img src="images/Pomona_College_seal.png" alt="Logo" style="height: 60px; margin-left: auto;">[@pomonacollege]
 </header>
 
 <!-- Sections -->
@@ -37,7 +39,7 @@ We are a group of two people who are passionate about animals, birds specificall
 :::{#data style="background-color: #d0e0e3; padding: 20px;"}
 ## DATA
 
-We got our deforestation data from www.globalforestwatch.org and our bird species data from https://www.gbif.org. 
+We got our deforestation data from www.globalforestwatch.org[@globalforestwatch] and our bird species data from https://www.gbif.org[@gbif]. 
 
 To understand the impacts of deforestation, we used a deforestation dataset. This dataset, we called "net_tree_change.csv", had important variables: gain, loss, net, gfw_area__ha, the latter indicating the total forest size at the beginning. Using this dataset, we calculated 10  countries with the most negative forest size change between 2000-2020, and 10 countries with the most positive forest size change between 2000-2020. Among these 10 countries for each category, we chose 5 that had enough data points so we could conduct analysis, but not too much data points like Brazil or the US, that would take up gigabytes of memory. The countries we chose for each category are highlighted below: (The image depicts countries with positive(green) or negative(red) net forest change between 2000 and 2020.)![Geodist](images/deforestation.png){style="width: 40%; float: right; margin-left: 10px; margin-top: 10px; margin-bottom: 10px;"}
 
@@ -64,7 +66,7 @@ We previously explained how we chose 10 countries, 5 of which has experienced mo
 :::{#methods style="background-color: #d9ead3; padding: 20px;"}
 ## METHODS 
 
-**1.** We downloaded all the data manually and placed them into folders as highlighted by **Fig 1**. Our processing includes the following:
+**1.** We downloaded all the data manually and placed them into folders. Our processing includes the following:
 
   - creating an *all_bird_orders_data.csv* dataset that combines all manually downloaded bird datasets accross countries, years and species![](plots/Bangladesh_log.png){style="width: 25%; float: right; margin-left: 15px; margin-top: 10px; margin-bottom: 10px;"}
 
@@ -152,3 +154,5 @@ Thank you for following along. This work was done by Ulas Ayyilmaz and Ishika Ke
 Variable names used for future reference:
 *all_birds_data*, *filtered_bird_orders*, *filtered_forest_data*, *joined_data*, *joined_data*, *country_density_map*, *country_density_map_logscale*(counts in log_scale), *model_data_log*, *model_data_log_normalized*, *model_data_log_normalized_bins*, *train_data_bins*, *test_data_bins*.
 :::
+
+
