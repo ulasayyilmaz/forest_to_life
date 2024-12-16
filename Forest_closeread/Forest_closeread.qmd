@@ -1,0 +1,89 @@
+---
+title: Predicting Biodiversity by Change in Forest Mass
+format: 
+  closeread-html:
+    embed-resources: true
+---
+
+:::{.cr-section}Introduction
+
+Biodiversity of the world makes living in the world a wondrous experience, and is crucial for survival of human beings. The world houses countless complex interactions between different species that maintain a delicate balance for the sustenance of life. This balance has been preserved for the past millions of years with change in dynamics that resulted in extinction of some species and evolution of others.
+
+With human-kind's taking precedence in the recent world history, this million year-old ecosystem balance started to experience intense fluctuations. What started with the Industrial Revolution led to a massive emission of green house gasses that endangered the Ozone Layer and gradually raised the temperature of the Earth through various mechanisms. Moreover, humans have shown small regard for life of other beings for the sake of earning money over them, causing the extinction and endangerment of so many including ...,...,... The harm committed by humans on nature include massive clearings of the forest and converting those lands into fertile farm-lands. This, together with wildfires, results in accelerating rates of deforestation, especially at the critical oxygen-producing regions including the Congo Rainforest and the Amazon Rainforest. 
+
+Rainforests are homes to the most diversity of life on the planet, and are critical sources of oxygen production and carbon trapping for the world. A world without rainforest is inhabitable by any living beings, and gradual destruction of rainforests is having many adverse affects, one of which include loss of biodiversity. 
+
+We are a group of two people who are passionate about animals, birds specifically. Birds are relatively harder to keep track of due to them inhabiting nests dozens of feet above the ground and are being smaller in size. Compared to land animals and larger animals, making an estimate of the number of a specific bird species in the world is relatively harder. Therefore, we wanted to develop models that would take in different deforestation variables including new forest loss, new forest gain, net forest change, stable forest kept, all of which are related to each other, and predict the number of unique species of birds dependent on the change in forests. Our model will allow us to predict how hypothetical changes in forest sizes will affect bird populations in the future, which can be very useful in developing policies that prioritize biodiversity, by making the threat of many animal's extinction obvious through data. 
+:::
+
+
+:::{.cr-section}Methods
+We got our deforestation data from www.globalforestwatch.org and our bird species data from gbif.org. 
+
+How our deforestation dataset looks like:
+insert deforestation dataset look
+How our bird dataset looks like:
+insert bird dataset look
+
+To understand the impacts of deforestation, we used the Deforestation dataset, and calculated the 10 countries with the most negative forest size change between 2000-2020, and the 10 countries with the most positive forest size change between 2000-2020. Among these 10 countries for each category, we chose 5 that had enough datapoints so we could conduct analysis, but not too much data like Brazil or the US, that would take up GigaBytes of memory in our computers. The countries we chose for each category are outlined below:
+Highest Net Forest Loss: 
+Paraguay(PRY), Democratic Republic of Congo(COD), Mozambique(MOZ), Indonesia(IDN), Tanzania(TZA)
+Highest Net Forest Gain:
+Uruguay(URY), Ukraine(UKR), Poland(POL), Ireland(IRL), Bangladesh(BGD)
+There are more than a dozen bird orders on the GBIF database, with some species including on the order of millions of datapoints. Therefore, to cut down on memory use, in addition to chosing countries wisely, we chose 4 orders in total, representing life in different ecosystems. Two of the four selected orders are Coraciiformes, 
+Strigiformes, both of whom live in forests and woodlands. The third order is galliformes who live on shrublands, and the last order is Ciconiiformes who live on wetlands. We wanted to capture as much variance possible with our selection of bird orders. 
+Lastly, the GBIF database offers observations starting 1900, all the way until the present. For lower memory consumption purposes, we only acquired data from years 2000, 2010, and 2020, in parallel with the time span captured by the deforestation data. 
+
+1.We downloaded all the data and preprocessed variables (changing char to doubles, getting rid of unnecessary variables like ID, changing country codes to country names for consistency). 
+2.We merged two datasets to have one dataset that looked like this:
+dataset with both bird data, and the deforestation data
+3.We calculated the counts of each bird order in each country, and tracked their change across time:
+10 plots of order counts accross time
+4.We visualized the geospatial change of bird order concentrations across time. Our deforestation data don't unfortunately provide detail into location of forest lost and gained, so it's hard to infer correlations between changes in bird number concentrations and changes in forests. 
+40 heat maps of each bird order's changing count concentration accross time
+5. We then trained a kNN, a SVM, and a Random Forest on our deforestation data with the outcome variable being the change of the count of that bird order in that country. 
+it's currently implemented to predict the exact value of bird order counts. Change the dataframe such that instead of bird counts
+1. we have bird count change from 2000-2020. So for each bird order for each country, there will be one value.
+We intend to find correlations, to see if deforestation parameters can predict change in population of a bird order by being consistent across countries. 
+6. We analyzed the networks performance, concluded that we expect some correlation for bird species inhabiting forests. We trained 2 SVM models, one with the radial basis kernel and the other with the polynomial kernel. We trained 2 random forests, one for regression, one for classification. We trained a single knn on a classification task. 
+7. For all of our models, we found minimum correlation between some variables. (elaborate)
+
+While this work doesn't purport any direct correlation between changes in forest size and biodiversity of birds, there are many liitations to this study that might have been the reason for a lack of correlation. Somme of this study's limitation's include disproportionate amount of observations between 2000 and 2020. There are only a few observations in 2000, and so many observations of birds in 2020, so the models struggled to learn patterns to distinguish between different countries and species, where the year always was the biggest predictor, regardless of taking log values and normalizing. So when I see an enourmous increase between 2000,2020, in a species, it doesn't imply a major increase in animal's population, but the number of observation. @cr-rf_geodist1 @cr-rf_geodist2
+
+In order to tackle this problem, first
+i. on the model_data, which is the grouped (country, year, order) summarize n() for count, I applied log function to order_counts, so that the increase from 2000 to 2010 is not as sharp, implying that the bird populations don't increase exponentially: log_count variable
+ii. on the log-scaled data called model_data_log, I normalized each log_count globally between 0-1.
+
+:::{cr-rf_geodist1}
+![geodist1](images/poland_geo_2020_normalized.png)
+:::
+:::{cr-rf_geodist2}
+![poland_2020_geodistribution.png](images/poland_geo_normalized_2000.png)
+:::
+:::
+
+:::{.cr-section}Results
+
+:::
+:::{.cr-section}Discussion
+DISCUSSION: 
+If we were to be able to train a model in the future that would be able to more accurately use the rate of deforestation in certain countries to predict the number of birds threatened by deforestation, as well as which species of birds are most impacted by deforestation, we could streamline our conservation and protection efforts as we would be able to tell which species are most in need of protection. Additionally, this would be an extremely positive use of data that is collected from public observations and bird-watching practices, allowing the community at large to help with conservation and protection of endangered species. We strongly believe that any steps towards better time, capital, and resource allocation when it comes to biodiversity conservation and  
+habitat restoration can go a long way, and having a highly accurate means of knowing which species are struggling the most to adapt to the deforestation that persists in many areas of the world would be a large leap. We hope that our project could act as a starting point to the long journey of more efficient and hopefully effective wildlife conservation.
+:::
+
+
+Thank you for following along. This work was done by Ulas Ayyilmaz and Ishika Keswani as a  final project in our Computational Statistics Class, led by Jo Hardin <3. 
+
+all_birds_data is the combined birds data
+filtered_bird_orders (filter for 10 countries)
+filtered_forst_data (filter for 10 countries)
+joined_data
+joined_data!(no NA's in individual_count)
+country_density_map
+country_density_map_logscale with counts in log_scale
+model_data_log
+model_data_log_normalized
+model_data_log_normalized_bins
+
+train_data_bins
+test_data_bins

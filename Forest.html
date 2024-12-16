@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.555">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Predicting Biodiversity by Change in Forest Mass</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="Forest_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Forest_files/libs/quarto-html/quarto.js"></script>
+<script src="Forest_files/libs/quarto-html/popper.min.js"></script>
+<script src="Forest_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Forest_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Forest_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Forest_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Forest_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Forest_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Forest_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Predicting Biodiversity by Change in Forest Mass</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><strong>INTRODUCTION</strong></p>
+<p>Biodiversity of the world makes living in the world a wondrous experience, and is crucial for survival of human beings. The world houses countless complex interactions between different species that maintain a delicate balance for the sustenance of life. This balance has been preserved for the past millions of years with change in dynamics that resulted in extinction of some species and evolution of others.</p>
+<p>With human-kind’s taking precedence in the recent world history, this million year-old balance started to experience intense fluctuations. What started with the Industrial Revolution led to a massive emission of green house gasses that endangered the Ozone Layer and gradually raised the temperature of the Earth. Moreover, humans have shown small regard for life of other for the sake of earning material goods, causing the extinction of many, including specific tortoise and rhino species, and endangerment of many including Asian elephants and some leopard species. The harm committed by humans on nature include massive clearings of the forest and converting those lands into fertile farm-lands. This, together with wildfires, results in accelerating rates of deforestation, especially at the critical oxygen-producing regions including the Congo Rainforest and the Amazon Rainforest.</p>
+<p>Rainforests are homes to the most diversity of life on the planet, and are critical sources of oxygen production and carbon trapping for the world. A world without rainforest is inhabitable by any living beings, and gradual destruction of rainforests is having many adverse affects, one of which include loss of biodiversity.</p>
+<p>We are a group of two people who are passionate about animals, birds specifically. We are curious about trends in bird species’ population across the world in the past two decades. Counts of birds are relatively harder to keep track of as birds are smaller in size and inhabit nests dozens of feet above the ground. Compared to land animals and larger animals, making an estimate of the number of a specific bird species in the world poses a challange Therefore, we wanted to develop models that would take in different deforestation variables including new forest loss, new forest gain, net forest change, stable forest kept, and predict the number of unique species of birds dependent on the change in forests. Our model will allow us to predict how hypothetical changes in forest sizes will affect bird populations in the future, which can be very useful in developing policies that prioritize biodiversity, by making the threat of many animal’s extinction obvious through data.</p>
+<p><strong>DATA</strong></p>
+<p>We got our deforestation data from www.globalforestwatch.org and our bird species data from https://www.gbif.org.</p>
+<p>To understand the impacts of deforestation, we used a deforestation dataset. This dataset, we called “net_tree_change.csv”, had important variables: gain, loss, net, gfw_area__ha, the latter indicating the total forest size at the beginning. Using this dataset, we calculated 10 countries with the most negative forest size change between 2000-2020, and 10 countries with the most positive forest size change between 2000-2020. Among these 10 countries for each category, we chose 5 that had enough data points so we could conduct analysis, but not too much data points like Brazil or the US, that would take up gigabytes of memory. The countries we chose for each category are highlighted below: <img src="images/list_countries.png" class="img-fluid" style="width: 20%; float: right; margin-left: 10px; margin-top: 10px;" data-fig-cap="Fig. 1: Country List" alt="Fig1. Countries List"></p>
+<p>Highest Net Forest Loss: <strong>Paraguay(PRY), Democratic Republic of Congo(COD), Mozambique(MOZ), Indonesia(IDN), Tanzania(TZA)</strong></p>
+<p>Highest Net Forest Gain: <strong>Uruguay(URY), Ukraine(UKR), Poland(POL), Ireland(IRL), Bangladesh(BGD)</strong></p>
+<p>GBIF(Global Biodiversity Information Facility) is home to data information belonging to thousands of different species, including the species “Aves” which is the taxonomic label describing birds. the GBIF database, houses hundreds of gigabytes worth of data, with each row(observation) indicating a species observation, with many information relating to the species and location observed per each row including kingdom, phylum, class, order, family, genus, species, countrycode, stateProvince, indivisualCount, decimalLatitude, decimalLongitude, day, month, year etc. <img src="images/fig2.png" class="img-fluid" style="width: 40%; float: right; margin-left: 15px; margin-top: 10px; margin-bottom: 10px;" data-fig-cap="Fig. 2: Geographical<br> Distribution in Poland" alt="Geodist"></p>
+<p>We applied various 3 filters to the dataset to download the right data. These filters are highlighted below:</p>
+<ul>
+<li><p><strong>Country:</strong> 10 countries</p></li>
+<li><p><strong>Year:</strong> 2000, 2010, 2020</p></li>
+<li><p><strong>Order:</strong> Coraciiformes, Strigiformes, Galliformes, Ciconiiformes</p></li>
+</ul>
+<p>We previously explained how we chose 10 countries, 5 of which has experienced more forest loss than gain, and the other 5, the opposite. <strong>Coraciiformes</strong>, <strong>Strigiformes</strong>, both live in forests and woodlands. <strong>Galliformes</strong> live on shrublands, and <strong>Ciconiiformes</strong> live on wetlands. We wanted to capture a high variance with the selection of these 4 orders. They also offered enough datapoints for analysis while not occupying high amounts of memory space. The GBIF database offers observations starting 1900, all the way until the present. We only acquired data from years 2000, 2010, and 2020, due to the limitation of limited memory space. This is in parallel with the time span captured by the deforestation data.</p>
+<p><strong>METHODS</strong></p>
+<p><strong>1.</strong> We downloaded all the data manually and placed them into folders as highlighted by <strong>Fig 1</strong>. Our processing includes the following:</p>
+<ul>
+<li><p>creating an <em>all_bird_orders_data.csv</em> dataset that combines all manually downloaded bird datasets accross countries, years and species</p></li>
+<li><p>removed uninformative variables such as <em>ID</em>, <em>issue</em></p></li>
+<li><p>changing variables with numeric meanings from &lt;<em>chr</em>&gt; to &lt;<em>dbl</em>&gt;</p></li>
+</ul>
+<p><img src="plots/Bangladesh_log.png" class="img-fluid" style="width: 40%; float: right; margin-left: 15px; margin-top: 10px; margin-bottom: 10px;"></p>
+<ul>
+<li>changed <em>countryCode</em> variable in <em>forest_data</em> to <em>countryName</em> for consistency</li>
+</ul>
+<p><strong>2.</strong> We merged two datasets <em>forest_data</em> with <em>all_birds_data</em> to have one dataset.</p>
+<p><strong>3.</strong> We calculated the counts of each bird order in each country, and tracked their change across time as shown in fig 3 for Bangladesh.</p>
+<p><strong>4.</strong> We visualized the geospatial change of bird order concentrations across time. Our deforestation data don’t unfortunately provide detail about the precise location of forest lost and gained, so it’s hard to infer correlations between changes in bird number concentrations and changes in forests.</p>
+<div class="quarto-figure quarto-figure-center" style="width: 80%; margin-top: 10px; margin-bottom: 10px;">
+<figure class="figure">
+<p><img src="images/geo_pol_10_20.png" class="img-fluid figure-img"></p>
+<figcaption>geobird</figcaption>
+</figure>
+</div>
+<p>The number of people in every country who engage actively in bird-watching and online reporting of bird sightings increased significantly between 2000 and 2020, possibly as a result of a combination of population increases, more widespread and easy access to the internet and mobile devices, and more awareness of personal and mental benefits of bird watching as a hobby. This meant that although the population of all the bird species is known to have decreased, the number of people seeking out and reporting bird sightings increased, making the data show a supposed increase in the number of birds sighted, when that isn’t truly the case. Thus, we needed to conduct some preliminary work before using the data.</p>
+<p>The first form of pre-processing of the data we did was taking the natural log of the bird_count values for each of the observed species for each year, and stored these new values in a separate data frame. Next, in order to make the values in the new data frame easier for us to work with, we conducted a calculation:</p>
+<p><span class="math display">\[
+\frac{\ln(\text{bird count}) - \min(\ln(\text{bird count}))}{\max(\ln(\text{bird count})) - \min(\ln(\text{bird count}))}
+\]</span></p>
+<p>This converted all the values to values between 0 and 1. This second step helped tackle another issue, which was of different countries having largely different numbers of observations for each bird species, which would depend on factors such as the biomass present in the country, the climate, the type of ecosystems that are prevalent, conservation laws, etc.</p>
+<p><strong>5.</strong> The next step was to train different models. We used our aforementioned new data frame first, but then also binned the points in bins of size 0.1 which were assigned with representative categorical one-hot encoded values from 1 through 10. This binned data would be used for models that aren’t regression.</p>
+<p>In our process to try and find a model that would accurately predict changes in bird sightings based on forest area changes, we trained and tested 5 different models.</p>
+<ul>
+<li><p><strong>Model 1:</strong> Support Vector Machines with Polynomial Kernels. We used the binned version of our data to train the support vector machine. Additionally, when processing the data for the recipe used in this model, we let all the variables of type ‘double’ remain as is. However, the variables ‘species’ and ‘country’ which were characters, were changed to a factored form and one-hot encoded. With the ‘year’ variable, in order to ensure that there is a clear difference between the difference in time between 2000 - 2010 and 2000 - 20202, we chose not to one-hot encode the variable, but rather assigned the value 0 to 2000, 1 to 2010, and 2 to 2020, ensuring that the concept of uniform time difference was correctly represented in the form of distance on our visuals. We then used cross-validation with v = 4 to tune the parameters of this model. However, although the accuracy results of this model were not the worst (0.23),and had some predictive power, when we plotted the results in the below confusion matrix heat map, we were able to see that the model simply categorised all the observations into bin 3. This makes sense given a large portion of our data did fall into bin 3, but it also Indicated that the model was unable to capture the underlying nuances and differences between the observations, making it ineffective.</p></li>
+<li><p><strong>Model 2:</strong> Radial Basis Support Vector Machine Similarly to the previous model, we used the binned data to train and test this model, and used cross-validation with v = 4 to tune the cost value as well as the radial basis sigma value. Upon testing the model with our data, we found that the mean accuracy was consistent across different cost values, which indicates an error in the process. The accuracy mean in this case is 0.22. Upon visualising the results, we find a similar result to the previous model wherein the model predicts every single observation to be falling into the third bin, which defeats the purpose and does not capture any differences.</p></li>
+</ul>
+<ol type="1">
+<li><p>we have bird count change from 2000-2020. So for each bird order for each country, there will be one value. We intend to find correlations, to see if deforestation parameters can predict change in population of a bird order by being consistent across countries.</p></li>
+<li><p>We analyzed the networks performance, concluded that we expect some correlation for bird species inhabiting forests. We trained 2 SVM models, one with the radial basis kernel and the other with the polynomial kernel. We trained 2 random forests, one for regression, one for classification. We trained a single knn on a classification task.</p></li>
+<li><p>For all of our models, we found minimum correlation between some variables. (elaborate)</p></li>
+</ol>
+<p>While this work doesn’t purport any direct correlation between changes in forest size and biodiversity of birds, there are many liitations to this study that might have been the reason for a lack of correlation. Somme of this study’s limitation’s include disproportionate amount of observations between 2000 and 2020. There are only a few observations in 2000, and so many observations of birds in 2020, so the models struggled to learn patterns to distinguish between different countries and species, where the year always was the biggest predictor, regardless of taking log values and normalizing. So when I see an enourmous increase between 2000,2020, in a species, it doesn’t imply a major increase in animal’s population, but the number of observation.</p>
+<p>In order to tackle this problem, first i. on the model_data, which is the grouped (country, year, order) summarize n() for count, I applied log function to order_counts, so that the increase from 2000 to 2010 is not as sharp, implying that the bird populations don’t increase exponentially: log_count variable ii. on the log-scaled data called model_data_log, I normalized each log_count globally between 0-1.</p>
+<p><strong>DISCUSSION: </strong></p>
+<p>Our original goal for this project was to use various variables relating to the extent of deforestation and changes in forest size to predict the number of sightings of different bird species in several selected countries. We planned on comparing the number of sightings per bird species in a country in the years 2000 and 2020, as downloading the data for every single years would be too computationally expensive for our devices. In order to obtain our numerical values for the number of bird sightings, the data-collectors relied on sightings from bird-watchers and other citizens of the country.</p>
+<p>Given our results, at this point, we would like to talk about the place of this work in literature.</p>
+<p>If we were to be able to train a model in the future that would be able to more accurately use the rate of deforestation in certain countries to predict the number of birds threatened by deforestation, as well as which species of birds are most impacted by deforestation, we could streamline our conservation and protection efforts as we would be able to tell which species are most in need of protection. Additionally, this would be an extremely positive use of data that is collected from public observations and bird-watching practices, allowing the community at large to help with conservation and protection of endangered species. We strongly believe that any steps towards better time, capital, and resource allocation when it comes to biodiversity conservation and habitat restoration can go a long way, and having a highly accurate means of knowing which species are struggling the most to adapt to the deforestation that persists in many areas of the world would be a large leap. We hope that our project could act as a starting point to the long journey of more efficient and hopefully effective wildlife conservation.</p>
+<p>Thank you for following along. This work was done by Ulas Ayyilmaz and Ishika Keswani as a final project in our Computational Statistics Class, led by Jo Hardin &lt;3.</p>
+<p>Variable names used for future reference: <em>all_birds_data</em>, <em>filtered_bird_orders</em>, <em>filtered_forest_data</em>, <em>joined_data</em>, <em>joined_data</em>, <em>country_density_map</em>, <em>country_density_map_logscale</em>(counts in log_scale), <em>model_data_log</em>, <em>model_data_log_normalized</em>, <em>model_data_log_normalized_bins</em>, <em>train_data_bins</em>, <em>test_data_bins</em></p>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

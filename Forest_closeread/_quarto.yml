@@ -1,0 +1,6 @@
+project:
+  type: website
+
+format:
+  closeread-html:
+    embed-resources: true

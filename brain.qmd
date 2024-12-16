@@ -94,3 +94,5 @@ ii. on the log-scaled data called model_data_log, I normalized each log_count gl
 svm model only predicts the b3 class, which has the most observation(4) compared to other classes. 
 knn predicts well for train dataset, not so well but still above average for test.
 random forest
+
+7. Scrollytelling used to work before, is not working anymore. 
