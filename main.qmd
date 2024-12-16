@@ -117,7 +117,7 @@ write.csv(combined_data, "all_bird_orders_data.csv", row.names = FALSE)
 cat("Combined CSV file created as 'all_bird_orders_data.csv' in the main directory.\n")
 
 ```
-
+m
 ```{r}
 bird_orders <- read.csv("all_bird_orders_data.csv")
 head(bird_orders)
@@ -691,13 +691,15 @@ tuning_results1|>
   labs(title = "Accuracy", y = "")
 ```
 ```{r}
+final_rf_wflow1 <- rf_wflow1 |>
+  finalize_workflow(best_params)
 
-# Step 4: Fit Model
-rf_fit1 <- rf_wflow1 |>
+# Step 6: Fit Final Model
+final_rf_fit1 <- final_rf_wflow1 |>
   fit(data = train_data_bins)
 
 # Step 5: Predict on Train Data
-rf_preds1 <- predict(rf_fit1, new_data = train_data_bins) |>
+rf_preds1 <- predict(final_rf_fit1, new_data = train_data_bins) |>
   bind_cols(train_data_bins)
 
 # Step 6: Evaluate Model Performance (MSE)
@@ -705,14 +707,14 @@ rf_metrics1 <- rf_preds1 |>
   metrics(truth = scaled_log_count_bins, estimate = .pred_class)
 
 # Extract MSE
-rf_mse <- rf_metrics1 |>
+rf_mse1 <- rf_metrics1 |>
   filter(.metric == "rmse") |>  # You can replace this with "mse" if you need it
   pull(.estimate)
 
-rf_mse
+rf_mse1
 
 # Step 5: Predict on Test Data
-rf_preds2 <- predict(rf_fit1, new_data = test_data_bins) |>
+rf_preds2 <- predict(final_rf_fit1, new_data = test_data_bins) |>
   bind_cols(test_data_bins)
 
 # Step 6: Evaluate Model Performance (MSE)
@@ -728,7 +730,7 @@ rf_mse2 <- rf_metrics2 |>
 
 ```{r}
 library(vip)
-vip(rf_fit1)
+vip(final_rf_fit1)
 ```
 
 ```{r}
