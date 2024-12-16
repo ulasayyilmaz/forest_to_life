@@ -1,5 +1,5 @@
 ---
-title: Predicting Biodiversity by Change in Forest Mass
+title: Predicting Biodiversity by Analyzing Change in Forest Mass
 format: 
   html:
     page-layout: full
@@ -38,7 +38,7 @@ We are a group of two people who are passionate about animals, birds specificall
 
 We got our deforestation data from www.globalforestwatch.org and our bird species data from https://www.gbif.org. 
 
-To understand the impacts of deforestation, we used a deforestation dataset. This dataset, we called "net_tree_change.csv", had important variables: gain, loss, net, gfw_area__ha, the latter indicating the total forest size at the beginning. Using this dataset, we calculated 10  countries with the most negative forest size change between 2000-2020, and 10 countries with the most positive forest size change between 2000-2020. Among these 10 countries for each category, we chose 5 that had enough data points so we could conduct analysis, but not too much data points like Brazil or the US, that would take up gigabytes of memory. The countries we chose for each category are highlighted below: ![Geodist](images/deforestation.png){style="width: 40%; float: right; margin-left: 10px; margin-top: 10px; margin-bottom: 10px;"}
+To understand the impacts of deforestation, we used a deforestation dataset. This dataset, we called "net_tree_change.csv", had important variables: gain, loss, net, gfw_area__ha, the latter indicating the total forest size at the beginning. Using this dataset, we calculated 10  countries with the most negative forest size change between 2000-2020, and 10 countries with the most positive forest size change between 2000-2020. Among these 10 countries for each category, we chose 5 that had enough data points so we could conduct analysis, but not too much data points like Brazil or the US, that would take up gigabytes of memory. The countries we chose for each category are highlighted below: (The image depicts countries with positive(green) or negative(red) net forest change between 2000 and 2020.)![Geodist](images/deforestation.png){style="width: 40%; float: right; margin-left: 10px; margin-top: 10px; margin-bottom: 10px;"}
 
 Highest Net Forest Loss: 
 **Paraguay(PRY), Democratic Republic of Congo(COD), Mozambique(MOZ), Indonesia(IDN), Tanzania(TZA)**
@@ -46,7 +46,7 @@ Highest Net Forest Loss:
 Highest Net Forest Gain:
 **Uruguay(URY), Ukraine(UKR), Poland(POL), Ireland(IRL), Bangladesh(BGD)**
 
-GBIF(Global Biodiversity Information Facility) is home to data information belonging to thousands of different species, including the species "Aves" which is the taxonomic label describing birds. the GBIF database, houses hundreds of gigabytes worth of data, with each row(observation) indicating a species observation, with many information relating to the species and location observed per each row including kingdom, phylum, class, order, family, genus, species, countrycode, stateProvince, indivisualCount, decimalLatitude, decimalLongitude, day, month, year etc.
+GBIF(Global Biodiversity Information Facility) is home to data information belonging to thousands of different species, including the class "Aves" which is the taxonomic label describing birds. The GBIF database, houses hundreds of gigabytes worth of data, with each row(observation) indicating a observation, with many information relating to the species and location observed per each row including kingdom, phylum, class, order, family, genus, species, countrycode, stateProvince, indivisualCount, decimalLatitude, decimalLongitude, day, month, year etc.
 
 We applied various 3 filters to the dataset to download the right data. These filters are highlighted below:
 
@@ -61,11 +61,11 @@ We previously explained how we chose 10 countries, 5 of which has experienced mo
 
 
 :::{#methods style="background-color: #d9ead3; padding: 20px;"}
-## METHODS ![](plots/Bangladesh_log.png){style="width: 25%; float: right; margin-left: 15px; margin-top: 10px; margin-bottom: 10px;"}
+## METHODS 
 
 **1.** We downloaded all the data manually and placed them into folders as highlighted by **Fig 1**. Our processing includes the following:
 
-  - creating an *all_bird_orders_data.csv* dataset that combines all manually downloaded bird datasets accross countries, years and species
+  - creating an *all_bird_orders_data.csv* dataset that combines all manually downloaded bird datasets accross countries, years and species![](plots/Bangladesh_log.png){style="width: 25%; float: right; margin-left: 15px; margin-top: 10px; margin-bottom: 10px;"}
 
   - removed uninformative variables such as *ID*, *issue* 
 
@@ -76,7 +76,7 @@ We previously explained how we chose 10 countries, 5 of which has experienced mo
 
 **2.** We merged two datasets *forest_data* with *all_birds_data* to have one dataset.
 
-**3.** We calculated the counts of each bird order in each country, and tracked their change across time as shown in fig 3 for Bangladesh.
+**3.** We calculated the counts of each bird order in each country, and tracked their change across time. The figure to the right showcases normal log of bird counts in Bangladesh for years 2000(left), 2010(center), and 2020(right).
 
 **4.** We visualized the geospatial change of bird order concentrations across time. Our deforestation data don't unfortunately provide detail about the precise location of forest lost and gained, so it's hard to infer correlations between changes in bird number concentrations and changes in forests. 
 ![geobird](images/geo_pol_10_20.png){style="width: 50%; float: right; margin-left: 15px;margin-top: 10px; margin-bottom: 10px;"}
@@ -101,20 +101,23 @@ In our process to try and find a model that would accurately predict changes in 
 We used the binned version of our data to train the support vector machine. Additionally, when processing the data for the recipe used in this model, we let all the variables of type ‘double’ remain as is. However, the variables ‘species’ and ‘country’ which were characters, were changed to a factored form and one-hot encoded. ![Geodist](images/svm_rbf_matrix.png){style="width: 20%; float: right; margin-left: 15px; margin-top: 10px; margin-bottom: 10px;"} With the ‘year’ variable, in order to ensure that there is a clear difference between the difference in time between 2000 - 2010 and 2000 - 20202, we chose not to one-hot encode the variable, but rather assigned the value 0 to 2000, 1 to 2010, and 2 to 2020, ensuring that the concept of uniform time difference was correctly represented in the form of distance on our visuals. We then used cross-validation with v = 4 to tune the parameters of this model. However, although the accuracy results of this model were not the worst (0.23), and had some predictive power, when we plotted the results in the below confusion matrix heat map, we were able to see that the model simply categorised all the observations into bin 3. This makes sense given a large portion of our data did fall into bin 3, but it also Indicated that the model was unable to capture the underlying nuances and differences between the observations, making it ineffective.
 
 - **Model 2:** Radial Basis Support Vector Machine 
-![Geodist](images/svm-poly.png){style="width: 20%; float: right; margin-left: 15px; margin-top: 10px; margin-bottom: 10px;"}Similarly to the previous model, we used the binned data to train and test this model, and used cross-validation with v = 4 to tune the cost value as well as the radial basis sigma value. Upon testing the model with our data, we found that the mean accuracy was consistent across different cost values, which indicates an error in the process. The accuracy mean in this case is 0.26. Upon visualising the results, we find a similar result to the previous model wherein the model predicts every single observation to be falling into the third bin, which defeats the purpose and does not capture any differences. 
+![Geodist](images/svm-poly.png){style="width: 20%; float: right; margin-left: 15px; margin-top: 10px; margin-bottom: 10px;"}. Similarly to the previous model, we used the binned data to train and test this model, and used cross-validation with v = 4 to tune the cost value as well as the radial basis sigma value. Upon testing the model with our data, we found that the mean accuracy was consistent across different cost values, which indicates an error in the process. The accuracy mean in this case is 0.26. Upon visualising the results, we find a similar result to the previous model wherein the model predicts every single observation to be falling into the third bin, which defeats the purpose and does not capture any differences. 
 
-- **Model 3:** Regression Random Forest
 
-![rf_pred](images/random_forest_training_prediction.png){style="width: 20%; float:right; margin-top: 10px; margin-bottom: 10px;"}
+- **Model 3:** Classification Random.  Forest![rf_pred](images/rf_accuracy_bins_mtry.png){style="width: 20%; float:right; margin-top: 10px; margin-bottom: 10px;"} ![rf_var_imp_bins](images/randomforest_var_iportance_categorical_bins.png){style="width: 20%; float:right; margin-top: 10px; margin-bottom: 10px;"}
+For our third experiment, we trained a regression random forest tree on predictor variables relating to the forest data - stable, loss, gain, net, change, gfw_area__ha - predictor variables that relate to the bird data- country, order both of which are categorized, and year which is encoded as 0,1,2 for 2000, 2010, and 2020 respectively. We train a random forest and tune the mtry to find the optimal among 1 to 10, and to find the optimal number of trees among the list [1, 50, 100, 150, 200, 250, 300, 350, 400].
+Accuracies represented in the figure to the right indicate a higher performance approaching 0.2 for mtry that is 10 or 9, in the upper limit of possible values. 
 
-- **Model 4:** Classification Random Forest 
+![Geodist](images/rf_regression_rmse.png){style="width: 20%; float: right; margin-left: 15px; margin-top: 10px; margin-bottom: 10px;"}![rf_var_imp_bins](images/final_var_importance_rf_regress.png){style="width: 20%; float:right; margin-top: 10px; margin-bottom: 10px;"}
 
-![rf_var_imp_bins](images/randomforest_var_iportance_categorical_bins.png){style="width: 20%; float:right; margin-top: 10px; margin-bottom: 10px;"}
+- **Model 4:** Regression Random Forest. Similarly, we trained a random forest with num_trees and mtry in the same range of values. We found that for the regression task, the best rmse was 0.03280191 with the parameters of the best model mtry = 10, trees = 150. The image to the right indicates a negative relationship with mtry and root mean squared error. 
 
+Comparing these two RF models, we realize that a higher mtry value, consistently maps to a better accuracy and lower error. ![rf_pred](images/random_forest_training_prediction.png){style="width: 20%; float:right; margin-top: 10px; margin-bottom: 10px;"}Mtry stands for the number of random selection of variables per each split of the trees in the random forest, and it makes sense that including a greater variety of possible split variables allows for chosing the optimal varibale to split, reducing the error. On the other hand, we see no pattern for the optimal value for num_trees variable. While the classification task preferred trees = 300, the regression task preferred trees = 150. We argue that this makes sense, because our dataset isn't a big dataset, containing only 107 rows as aforementioned, so a higher number of trees doesn't necessarily introduce more learning ofunderlying patterns. 
 
 
 - **Model 5:** KNN
 ![Geodist](images/knn_accuracy.png){style="width: 20%; float: right; margin-left: 15px; margin-top: 10px; margin-bottom: 10px;"}
+Lastly, we trained a knn model on our dataset. We used a cross validation approach, utilizing 5 vfolds, and tuning an ideal k value among a list [1,3,5]. We find that the greatest accuracy is achieved by a knn with k = 5, having a mean 0.175 accuracy, predicting class among 10 binned classes. 
 :::
 
 :::{#limitations style="background-color: #fff2cc; padding: 20px;"}

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Predicting Biodiversity by Change in Forest Mass</title>
+<title>Predicting Biodiversity by Analyzing Change in Forest Mass</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -74,7 +74,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Predicting Biodiversity by Change in Forest Mass</h1>
+<h1 class="title">Predicting Biodiversity by Analyzing Change in Forest Mass</h1>
 </div>
 
 
@@ -125,10 +125,10 @@ window.Quarto = {
 <section id="data" class="level2" style="background-color: #d0e0e3; padding: 20px;">
 <h2 class="anchored" data-anchor-id="data">DATA</h2>
 <p>We got our deforestation data from www.globalforestwatch.org and our bird species data from https://www.gbif.org.</p>
-<p>To understand the impacts of deforestation, we used a deforestation dataset. This dataset, we called “net_tree_change.csv”, had important variables: gain, loss, net, gfw_area__ha, the latter indicating the total forest size at the beginning. Using this dataset, we calculated 10 countries with the most negative forest size change between 2000-2020, and 10 countries with the most positive forest size change between 2000-2020. Among these 10 countries for each category, we chose 5 that had enough data points so we could conduct analysis, but not too much data points like Brazil or the US, that would take up gigabytes of memory. The countries we chose for each category are highlighted below: <img src="images/deforestation.png" class="img-fluid" style="width: 40%; float: right; margin-left: 10px; margin-top: 10px; margin-bottom: 10px;" alt="Geodist"></p>
+<p>To understand the impacts of deforestation, we used a deforestation dataset. This dataset, we called “net_tree_change.csv”, had important variables: gain, loss, net, gfw_area__ha, the latter indicating the total forest size at the beginning. Using this dataset, we calculated 10 countries with the most negative forest size change between 2000-2020, and 10 countries with the most positive forest size change between 2000-2020. Among these 10 countries for each category, we chose 5 that had enough data points so we could conduct analysis, but not too much data points like Brazil or the US, that would take up gigabytes of memory. The countries we chose for each category are highlighted below: (The image depicts countries with positive(green) or negative(red) net forest change between 2000 and 2020.)<img src="images/deforestation.png" class="img-fluid" style="width: 40%; float: right; margin-left: 10px; margin-top: 10px; margin-bottom: 10px;" alt="Geodist"></p>
 <p>Highest Net Forest Loss: <strong>Paraguay(PRY), Democratic Republic of Congo(COD), Mozambique(MOZ), Indonesia(IDN), Tanzania(TZA)</strong></p>
 <p>Highest Net Forest Gain: <strong>Uruguay(URY), Ukraine(UKR), Poland(POL), Ireland(IRL), Bangladesh(BGD)</strong></p>
-<p>GBIF(Global Biodiversity Information Facility) is home to data information belonging to thousands of different species, including the species “Aves” which is the taxonomic label describing birds. the GBIF database, houses hundreds of gigabytes worth of data, with each row(observation) indicating a species observation, with many information relating to the species and location observed per each row including kingdom, phylum, class, order, family, genus, species, countrycode, stateProvince, indivisualCount, decimalLatitude, decimalLongitude, day, month, year etc.</p>
+<p>GBIF(Global Biodiversity Information Facility) is home to data information belonging to thousands of different species, including the class “Aves” which is the taxonomic label describing birds. The GBIF database, houses hundreds of gigabytes worth of data, with each row(observation) indicating a observation, with many information relating to the species and location observed per each row including kingdom, phylum, class, order, family, genus, species, countrycode, stateProvince, indivisualCount, decimalLatitude, decimalLongitude, day, month, year etc.</p>
 <p>We applied various 3 filters to the dataset to download the right data. These filters are highlighted below:</p>
 <ul>
 <li><p><strong>Country:</strong> 10 countries</p></li>
@@ -138,16 +138,16 @@ window.Quarto = {
 <p>We previously explained how we chose 10 countries, 5 of which has experienced more forest loss than gain, and the other 5, the opposite. <strong>Coraciiformes</strong>, <strong>Strigiformes</strong>, both live in forests and woodlands. <strong>Galliformes</strong> live on shrublands, and <strong>Ciconiiformes</strong> live on wetlands. We wanted to capture a high variance with the selection of these 4 orders. They also offered enough datapoints for analysis while not occupying high amounts of memory space. The GBIF database offers observations starting 1900, all the way until the present. We only acquired data from years 2000, 2010, and 2020, due to the limitation of limited memory space. This is in parallel with the time span captured by the deforestation data.</p>
 </section>
 <section id="methods" class="level2" style="background-color: #d9ead3; padding: 20px;">
-<h2 class="anchored" data-anchor-id="methods">METHODS <img src="plots/Bangladesh_log.png" class="img-fluid" style="width: 25%; float: right; margin-left: 15px; margin-top: 10px; margin-bottom: 10px;"></h2>
+<h2 class="anchored" data-anchor-id="methods">METHODS</h2>
 <p><strong>1.</strong> We downloaded all the data manually and placed them into folders as highlighted by <strong>Fig 1</strong>. Our processing includes the following:</p>
 <ul>
-<li><p>creating an <em>all_bird_orders_data.csv</em> dataset that combines all manually downloaded bird datasets accross countries, years and species</p></li>
+<li><p>creating an <em>all_bird_orders_data.csv</em> dataset that combines all manually downloaded bird datasets accross countries, years and species<img src="plots/Bangladesh_log.png" class="img-fluid" style="width: 25%; float: right; margin-left: 15px; margin-top: 10px; margin-bottom: 10px;"></p></li>
 <li><p>removed uninformative variables such as <em>ID</em>, <em>issue</em></p></li>
 <li><p>changing variables with numeric meanings from &lt;<em>chr</em>&gt; to &lt;<em>dbl</em>&gt;</p></li>
 <li><p>changed <em>countryCode</em> variable in <em>forest_data</em> to <em>countryName</em> for consistency</p></li>
 </ul>
 <p><strong>2.</strong> We merged two datasets <em>forest_data</em> with <em>all_birds_data</em> to have one dataset.</p>
-<p><strong>3.</strong> We calculated the counts of each bird order in each country, and tracked their change across time as shown in fig 3 for Bangladesh.</p>
+<p><strong>3.</strong> We calculated the counts of each bird order in each country, and tracked their change across time. The figure to the right showcases normal log of bird counts in Bangladesh for years 2000(left), 2010(center), and 2020(right).</p>
 <p><strong>4.</strong> We visualized the geospatial change of bird order concentrations across time. Our deforestation data don’t unfortunately provide detail about the precise location of forest lost and gained, so it’s hard to infer correlations between changes in bird number concentrations and changes in forests. <img src="images/geo_pol_10_20.png" class="img-fluid" style="width: 50%; float: right; margin-left: 15px;margin-top: 10px; margin-bottom: 10px;" alt="geobird"></p>
 <p>The number of people in every country who engage actively in bird-watching and online reporting of bird sightings increased significantly between 2000 and 2020, possibly as a result of a combination of population increases, more widespread and easy access to the internet and mobile devices, and more awareness of personal and mental benefits of bird watching as a hobby. This meant that although the population of all the bird species is known to have decreased, the number of people seeking out and reporting bird sightings increased, making the data show a supposed increase in the number of birds sighted, when that isn’t truly the case. Thus, we needed to conduct some preliminary work before using the data.</p>
 <p>The first form of pre-processing of the data we did was taking the natural log of the bird_count values for each of the observed species for each year, and stored these new values in a separate data frame. Next, in order to make the values in the new data frame easier for us to work with, we conducted a calculation:</p>
@@ -159,26 +159,16 @@ window.Quarto = {
 <p>In our process to try and find a model that would accurately predict changes in bird sightings based on forest area changes, we trained and tested 5 different models.</p>
 <ul>
 <li><p><strong>Model 1:</strong> Support Vector Machines with Polynomial Kernels. We used the binned version of our data to train the support vector machine. Additionally, when processing the data for the recipe used in this model, we let all the variables of type ‘double’ remain as is. However, the variables ‘species’ and ‘country’ which were characters, were changed to a factored form and one-hot encoded. <img src="images/svm_rbf_matrix.png" class="img-fluid" style="width: 20%; float: right; margin-left: 15px; margin-top: 10px; margin-bottom: 10px;" alt="Geodist"> With the ‘year’ variable, in order to ensure that there is a clear difference between the difference in time between 2000 - 2010 and 2000 - 20202, we chose not to one-hot encode the variable, but rather assigned the value 0 to 2000, 1 to 2010, and 2 to 2020, ensuring that the concept of uniform time difference was correctly represented in the form of distance on our visuals. We then used cross-validation with v = 4 to tune the parameters of this model. However, although the accuracy results of this model were not the worst (0.23), and had some predictive power, when we plotted the results in the below confusion matrix heat map, we were able to see that the model simply categorised all the observations into bin 3. This makes sense given a large portion of our data did fall into bin 3, but it also Indicated that the model was unable to capture the underlying nuances and differences between the observations, making it ineffective.</p></li>
-<li><p><strong>Model 2:</strong> Radial Basis Support Vector Machine <img src="images/svm-poly.png" class="img-fluid" style="width: 20%; float: right; margin-left: 15px; margin-top: 10px; margin-bottom: 10px;" alt="Geodist">Similarly to the previous model, we used the binned data to train and test this model, and used cross-validation with v = 4 to tune the cost value as well as the radial basis sigma value. Upon testing the model with our data, we found that the mean accuracy was consistent across different cost values, which indicates an error in the process. The accuracy mean in this case is 0.26. Upon visualising the results, we find a similar result to the previous model wherein the model predicts every single observation to be falling into the third bin, which defeats the purpose and does not capture any differences.</p></li>
-<li><p><strong>Model 3:</strong> Regression Random Forest</p></li>
+<li><p><strong>Model 2:</strong> Radial Basis Support Vector Machine <img src="images/svm-poly.png" class="img-fluid" style="width: 20%; float: right; margin-left: 15px; margin-top: 10px; margin-bottom: 10px;" alt="Geodist">. Similarly to the previous model, we used the binned data to train and test this model, and used cross-validation with v = 4 to tune the cost value as well as the radial basis sigma value. Upon testing the model with our data, we found that the mean accuracy was consistent across different cost values, which indicates an error in the process. The accuracy mean in this case is 0.26. Upon visualising the results, we find a similar result to the previous model wherein the model predicts every single observation to be falling into the third bin, which defeats the purpose and does not capture any differences.</p></li>
+<li><p><strong>Model 3:</strong> Classification Random. Forest<img src="images/rf_accuracy_bins_mtry.png" class="img-fluid" style="width: 20%; float:right; margin-top: 10px; margin-bottom: 10px;" alt="rf_pred"> <img src="images/randomforest_var_iportance_categorical_bins.png" class="img-fluid" style="width: 20%; float:right; margin-top: 10px; margin-bottom: 10px;" alt="rf_var_imp_bins"> For our third experiment, we trained a regression random forest tree on predictor variables relating to the forest data - stable, loss, gain, net, change, gfw_area__ha - predictor variables that relate to the bird data- country, order both of which are categorized, and year which is encoded as 0,1,2 for 2000, 2010, and 2020 respectively. We train a random forest and tune the mtry to find the optimal among 1 to 10, and to find the optimal number of trees among the list [1, 50, 100, 150, 200, 250, 300, 350, 400]. Accuracies represented in the figure to the right indicate a higher performance approaching 0.2 for mtry that is 10 or 9, in the upper limit of possible values.</p></li>
 </ul>
-<div class="quarto-figure quarto-figure-center" style="width: 20%; float:right; margin-top: 10px; margin-bottom: 10px;">
-<figure class="figure">
-<p><img src="images/random_forest_training_prediction.png" class="img-fluid figure-img"></p>
-<figcaption>rf_pred</figcaption>
-</figure>
-</div>
+<p><img src="images/rf_regression_rmse.png" class="img-fluid" style="width: 20%; float: right; margin-left: 15px; margin-top: 10px; margin-bottom: 10px;" alt="Geodist"><img src="images/final_var_importance_rf_regress.png" class="img-fluid" style="width: 20%; float:right; margin-top: 10px; margin-bottom: 10px;" alt="rf_var_imp_bins"></p>
 <ul>
-<li><strong>Model 4:</strong> Classification Random Forest</li>
+<li><strong>Model 4:</strong> Regression Random Forest. Similarly, we trained a random forest with num_trees and mtry in the same range of values. We found that for the regression task, the best rmse was 0.03280191 with the parameters of the best model mtry = 10, trees = 150. The image to the right indicates a negative relationship with mtry and root mean squared error.</li>
 </ul>
-<div class="quarto-figure quarto-figure-center" style="width: 20%; float:right; margin-top: 10px; margin-bottom: 10px;">
-<figure class="figure">
-<p><img src="images/randomforest_var_iportance_categorical_bins.png" class="img-fluid figure-img"></p>
-<figcaption>rf_var_imp_bins</figcaption>
-</figure>
-</div>
+<p>Comparing these two RF models, we realize that a higher mtry value, consistently maps to a better accuracy and lower error. <img src="images/random_forest_training_prediction.png" class="img-fluid" style="width: 20%; float:right; margin-top: 10px; margin-bottom: 10px;" alt="rf_pred">Mtry stands for the number of random selection of variables per each split of the trees in the random forest, and it makes sense that including a greater variety of possible split variables allows for chosing the optimal varibale to split, reducing the error. On the other hand, we see no pattern for the optimal value for num_trees variable. While the classification task preferred trees = 300, the regression task preferred trees = 150. We argue that this makes sense, because our dataset isn’t a big dataset, containing only 107 rows as aforementioned, so a higher number of trees doesn’t necessarily introduce more learning ofunderlying patterns.</p>
 <ul>
-<li><strong>Model 5:</strong> KNN <img src="images/knn_accuracy.png" class="img-fluid" style="width: 20%; float: right; margin-left: 15px; margin-top: 10px; margin-bottom: 10px;" alt="Geodist"></li>
+<li><strong>Model 5:</strong> KNN <img src="images/knn_accuracy.png" class="img-fluid" style="width: 20%; float: right; margin-left: 15px; margin-top: 10px; margin-bottom: 10px;" alt="Geodist"> Lastly, we trained a knn model on our dataset. We used a cross validation approach, utilizing 5 vfolds, and tuning an ideal k value among a list [1,3,5]. We find that the greatest accuracy is achieved by a knn with k = 5, having a mean 0.175 accuracy, predicting class among 10 binned classes.</li>
 </ul>
 </section>
 <section id="limitations" class="level2" style="background-color: #fff2cc; padding: 20px;">

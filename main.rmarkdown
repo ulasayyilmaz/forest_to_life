@@ -48,6 +48,7 @@ top_5_net_asc#tanzania, Mozambique, indonesia, DCcongo, paraguay
 ```
 
 
+
 order of interest (check exist for each country)
 
 Most net negative:
@@ -62,6 +63,7 @@ All columns of a RGBIF EOD dataset
 
 Ok, brainstorm time. Deforestation means removel of forests over time due to mostly due to human interference. Deforestation affects many things that contribute to human's well-being indirectly in a negative way. A direct effect is observed on the biodiversity - specifically birds who roam freely in forests. Other 
 
+
 ```{r}
 bird_data<-name_suggest(q = "Aves", rank = "class", curlopts = list(timeout = 60))
 bird_taxon_key <- bird_data$data$key
@@ -74,8 +76,6 @@ years <- c(2000, 2010, 2020)  # Year range
 eod_dataset_key <- "4fa7b334-ce0d-4e88-aaae-2e0c138d049e"  # EOD datasetKey
 orders <- c("Coraciiformes","Strigiformes","Galliformes","Ciconiiformes")
 ```
-
-
 
 ```{r}
 # Load necessary library
@@ -123,9 +123,11 @@ bird_orders <- read.csv("all_bird_orders_data.csv")
 head(bird_orders)
 #596024662,584212444
 ```
+
 info: all belong to aves class
 #important columns to keep:
 order, family, genus, species, stateProvince, individualCount, decimalLatitude, elevation,decimalLongitude, day,month, year, country
+
 
 ```{r}
 filtered_bird_orders <- bird_orders |>
@@ -145,7 +147,6 @@ filtered_forest_data <- forest_data %>%
   filter(iso %in% country_mapping$iso) %>%   # Keep only rows with matching ISO codes
   left_join(country_mapping, by = "iso")
 ```
-
 
 ```{r}
 # Combine the datasets based on the "country" column
@@ -237,7 +238,6 @@ ggsave(paste("plots/Bangladesh.png"))
 
 ```
 
-
 ```{r}
 # ggsave("bird_density_map.png", plots[[1]], width = 10, height = 7)
 # Example: Display the first plot
@@ -247,7 +247,6 @@ ggsave(paste("plots/Bangladesh.png"))
 # print(plots[[3]])
 
 ```
-
 
 ```{r}
 # Calculate the global maximum change
@@ -296,9 +295,6 @@ print(forest_change_plot)
 
 
 ```
-
-
-
 
 ```{r}
 # #visualize geographical distribution with log normalized data
@@ -376,7 +372,6 @@ model_data_log_normalized <- model_data_log |>
 head(model_data_log_normalized)
 ```
 
-
 ```{r}
 model_data_log_normalized_bins <- model_data_log_normalized |>
   mutate(
@@ -415,7 +410,6 @@ train_data <- training(split_index)
 test_data <- testing(split_index)
 
 ```
-
 
 ```{r}
 library(e1071)
@@ -533,7 +527,6 @@ accuracy_results_rbf <- svm_metrics_rbf |>
 print(accuracy_results_rbf)
 ```
 
-
 ```{r}
 # # Step 3: Create a Confusion Matrix with Explicit Levels
 # confusion_data <- svm_predictions |>
@@ -558,8 +551,6 @@ print(accuracy_results_rbf)
 # print(heatmap_plot)
 
 ```
-
-
 
 ```{r}
 model_data_log_normalized <- model_data_log_normalized |> 
@@ -611,7 +602,6 @@ tuning_results|>
   labs(title = "rmse", y = "")
 ```
 
-
 ```{r}
 # Step 4: Select Best Parameters
 best_params <- rf_tune |> select_best()
@@ -644,7 +634,9 @@ best_params
 library(vip)
 vip(final_rf_fit)
 ```
+
 I realize that the year 2020 is very predictive, and the country tanzania very predictive, as both variables have distinctive natures appearantly. The variable that exists for all entries that is the most important is "net". Net change in forest size is somewhat indicative of predicting count.
+
 
 
 ```{r}
@@ -680,6 +672,7 @@ rf_tune1 <-
 
 rf_tune1 |> collect_metrics() 
 ```
+
 ```{r}
 tuning_results1 <- rf_tune1 |> collect_metrics()
 
@@ -690,6 +683,7 @@ tuning_results1|>
   geom_line(aes(x = trees, y = mean, color = mtry)) + 
   labs(title = "Accuracy", y = "")
 ```
+
 ```{r}
 
 # Step 4: Fit Model
@@ -781,8 +775,6 @@ ggplot(conf_matrix_tibble, aes(x = Prediction, y = Truth, fill = n)) +
 
 ```
 
-
-
 ```{r}
 # KNN model with tuning
 knn_recipe <- recipe(scaled_log_count_bins ~ stable + loss + gain + net + change + gfw_area__ha + year, 
@@ -821,6 +813,4 @@ knn_wflow_tune |>
   filter(.metric == "accuracy")
 
 ```
-
-
 
