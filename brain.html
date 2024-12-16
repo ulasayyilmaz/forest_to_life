@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>PRIVACY LABELS</title>
+<title>Predicting Biodiversity by Change in Forest Mass</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -33,11 +33,6 @@ ul.task-list li input[type="checkbox"] {
 <script src="brain_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="brain_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="brain_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
-<script src="brain_files/libs/quarto-contrib/intersection-observer-polyfill-1.0.0/intersection-observer.js"></script>
-<script src="brain_files/libs/quarto-contrib/scrollama-3.2.0/scrollama.min.js"></script>
-<script src="brain_files/libs/quarto-contrib/closeread-0.1.0/closeread.js"></script>
-<meta cr-debug-mode="false">
-<meta cr-remove-header-space="false">
 
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -69,7 +64,6 @@ window.Quarto = {
 };
 </script>
 
-<link rel="stylesheet" href="_extensions/qmd-lab/closeread/closeread.css">
 </head>
 
 <body>
@@ -80,7 +74,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">PRIVACY LABELS</h1>
+<h1 class="title">Predicting Biodiversity by Change in Forest Mass</h1>
 </div>
 
 
@@ -97,37 +91,116 @@ window.Quarto = {
 </header>
 
 
-<div class="cr-section cr-column-screen sidebar-left">
-<div class="narrative-col">
-<div class="trigger">
-<div class="narrative">
-<p>Privacy Terms Final Project Proposal</p>
-</div>
-</div>
-<div class="trigger">
-<div class="narrative">
-<p>Group Members:</p>
-</div>
-</div>
-<div class="trigger new-trigger" data-focus-on="cr-ishika">
-<div class="narrative">
-<p>Ishika KeswaniRole: Task Manager. Ishika is the brains of this proposal, as the proposed project is a spinoff from her 10-week SURP project which she presented a poster on. Therefore, she will be responsible for delegating tasks based on both our’s relative expertise.</p>
-</div>
-</div>
-<div class="trigger">
-<div class="narrative">
-<p>Project Role: Ishika conducted many user studies, and is familiar with common pain points and main misunderstood terms in both IOS and Android Privacy Labels. Ishika will be the mainly responsible person for creating a simplified version of the super complex Privacy Terms. Ishika’s insight and intuition will come in super handy for this task. Ishika will also be responsible for leading the web-scraping/online data processing process.</p>
-</div>
-</div>
-<div class="trigger">
-<div class="narrative">
-<p>Ulas Ayyilmaz Group Role: Project Manager: Ulas will be on top of each meeting scheduling, as well as checking if goals are met, upholding a clear structure to achieve the end product in the desired time. Project Role: Ulas will be responsible for building the backend as well as the front end of an extension that will allow the feature of hovering your mouse on a term and seeing it’s simplified version. Ulas will also contribute to webscraping. Ulas and Ishika will code both “What percent of similar apps found on google play store” feature, as well as the role of demographic background of an individual on their understanding of the terms (data collected by Ishika’s research group.</p>
-</div>
-</div>
-</div>
-<div class="sticky-col">
-<div class="sticky-col-stack">
-<div id="cr-ishika" class="sticky">
+<!-- Inline Style to Fix Alignment -->
+<style>
+  /* Ensure body and html occupy full viewport width */
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100vw; /* Full viewport width */
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+  }
+
+  /* Make header and sections span full width */
+  header, section {
+    margin: 0;
+    padding: 20px;
+    width: 100vw; /* Full viewport width */
+    box-sizing: border-box; /* Include padding in width */
+  }
+
+  /* Header styling */
+  header {
+    background-color: #d9d2e9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  nav ul {
+    list-style: none;
+    display: flex;
+    margin: 0;
+    padding: 0;
+  }
+
+  nav ul li {
+    margin-right: 20px;
+  }
+
+  nav ul li a {
+    text-decoration: none;
+    color: black;
+    font-weight: bold;
+  }
+
+  /* Section background colors */
+  #introduction {
+    background-color: #fef4e5;
+  }
+
+  #data {
+    background-color: #e8f5e9;
+  }
+
+  #methods {
+    background-color: #e3f2fd;
+  }
+
+  #limitations {
+    background-color: #ede7f6;
+  }
+
+  #discussion {
+    background-color: #ffebee;
+  }
+</style>
+<!-- Custom HTML for Header -->
+<header>
+<nav>
+<ul>
+<li>
+<a href="#introduction">Introduction</a>
+</li>
+<li>
+<a href="#data">Data</a>
+</li>
+<li>
+<a href="#methods">Methods</a>
+</li>
+<li>
+<a href="#limitations">Limitations</a>
+</li>
+<li>
+<a href="#discussion">Discussion</a>
+</li>
+</ul>
+</nav>
+<img src="images/Pomona_College_seal.png" alt="Logo" style="height: 60px; margin-left: auto;">
+</header>
+<!-- Sections -->
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Content for the introduction section.</p>
+</section>
+<section id="data" class="level2">
+<h2 class="anchored" data-anchor-id="data">Data</h2>
+<p>Content for the data section.</p>
+</section>
+<section id="methods" class="level2">
+<h2 class="anchored" data-anchor-id="methods">Methods</h2>
+<p>Content for the methods section.</p>
+</section>
+<section id="limitations" class="level2">
+<h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
+<p>Content for the limitations section.</p>
+</section>
+<section id="discussion" class="level2">
+<h2 class="anchored" data-anchor-id="discussion">Discussion</h2>
+<p>Content for the discussion section.</p>
+</section>
+<div class="cr-section">
+<div id="cr-ishika">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="Data_tracking.png" class="img-fluid figure-img"></p>
@@ -135,8 +208,11 @@ window.Quarto = {
 </figure>
 </div>
 </div>
-</div>
-</div>
+<p>Privacy Terms Final Project Proposal</p>
+<p>Group Members:</p>
+<p>Ishika Keswani <span class="citation" data-cites="cr-ishika">@cr-ishika</span> Group Role: Task Manager. Ishika is the brains of this proposal, as the proposed project is a spinoff from her 10-week SURP project which she presented a poster on. Therefore, she will be responsible for delegating tasks based on both our’s relative expertise.</p>
+<p>Project Role: Ishika conducted many user studies, and is familiar with common pain points and main misunderstood terms in both IOS and Android Privacy Labels. Ishika will be the mainly responsible person for creating a simplified version of the super complex Privacy Terms. Ishika’s insight and intuition will come in super handy for this task. Ishika will also be responsible for leading the web-scraping/online data processing process.</p>
+<p>Ulas Ayyilmaz Group Role: Project Manager: Ulas will be on top of each meeting scheduling, as well as checking if goals are met, upholding a clear structure to achieve the end product in the desired time. Project Role: Ulas will be responsible for building the backend as well as the front end of an extension that will allow the feature of hovering your mouse on a term and seeing it’s simplified version. Ulas will also contribute to webscraping. Ulas and Ishika will code both “What percent of similar apps found on google play store” feature, as well as the role of demographic background of an individual on their understanding of the terms (data collected by Ishika’s research group.</p>
 </div>
 <p>TITLE: Understanding User Privacy in Android Devices Broad Topic: Exploring terms found in Android Privacy ‘Nutrition Labels’ and creating an interface/website/app wherein users could input an android app store link (no privacy issues with android which makes web-scraping a much easier process J) and have as an output a simplified version of the terms and whether they are collected or shared, and what percentage of ‘similar apps’ found on the google play store collect/share each particular variable type. Additionally, if time permits, we could include a feature wherein hovering the cursor over a term would lead to a small projection on the screen containing a simplified explanation/definition of the term to increase accessibility of this information and negate the need to go to a whole different page or look up the definition.</p>
 <p>Data &amp; Variables &amp; End Product: Taking inspiration from the New York Times tree in the Decision Trees topic notes on the website, I thought it would be interesting to create a scrollytelling graphic/image of a similar tree which could explore:</p>
@@ -182,6 +258,9 @@ window.Quarto = {
 <section id="visualize-svm-model-performance" class="level1">
 <h1>Visualize SVM model performance</h1>
 <p>svm model only predicts the b3 class, which has the most observation(4) compared to other classes. knn predicts well for train dataset, not so well but still above average for test. random forest</p>
+<ol start="7" type="1">
+<li>Scrollytelling used to work before, is not working anymore.</li>
+</ol>
 </section>
 
 </main>

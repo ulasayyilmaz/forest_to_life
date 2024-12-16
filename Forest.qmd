@@ -1,9 +1,28 @@
 ---
 title: Predicting Biodiversity by Change in Forest Mass
-format: html
+format: 
+  html:
+    page-layout: full
 ---
 
-**INTRODUCTION**
+<!-- Custom HTML for Header -->
+<header style="background-color: #d9d2e9; padding: 10px; display: flex;">
+  <nav>
+    <ul style="list-style: none; display: flex; margin: 0; padding: 0;">
+      <li style="margin-right: 20px;"><a href="#introduction">Introduction</a></li>
+      <li style="margin-right: 20px;"><a href="#data">Data</a></li>
+      <li style="margin-right: 20px;"><a href="#methods">Methods</a></li>
+      <li style="margin-right: 20px;"><a href="#limitations">Limitations</a></li>
+      <li><a href="#discussion">Discussions</a></li>
+    </ul>
+  </nav>
+  <img src="images/Pomona_College_seal.png" alt="Logo" style="height: 60px; margin-left: auto;">
+</header>
+
+<!-- Sections -->
+
+:::{#introduction style="background-color: #cfe2f3; padding: 20px; "}
+## Introduction
 
 Biodiversity of the world makes living in the world a wondrous experience, and is crucial for survival of human beings. The world houses countless complex interactions between different species that maintain a delicate balance for the sustenance of life. This balance has been preserved for the past millions of years with change in dynamics that resulted in extinction of some species and evolution of others.
 
@@ -12,13 +31,14 @@ With human-kind's taking precedence in the recent world history, this million ye
 Rainforests are homes to the most diversity of life on the planet, and are critical sources of oxygen production and carbon trapping for the world. A world without rainforest is inhabitable by any living beings, and gradual destruction of rainforests is having many adverse affects, one of which include loss of biodiversity. 
 
 We are a group of two people who are passionate about animals, birds specifically. We are curious about trends in bird species' population across the world in the past two decades. Counts of birds are relatively harder to keep track of as birds are smaller in size and inhabit nests dozens of feet above the ground. Compared to land animals and larger animals, making an estimate of the number of a specific bird species in the world poses a challange Therefore, we wanted to develop models that would take in different deforestation variables including new forest loss, new forest gain, net forest change, stable forest kept, and predict the number of unique species of birds dependent on the change in forests. Our model will allow us to predict how hypothetical changes in forest sizes will affect bird populations in the future, which can be very useful in developing policies that prioritize biodiversity, by making the threat of many animal's extinction obvious through data. 
+:::
 
-**DATA**
+:::{#data style="background-color: #d0e0e3; padding: 20px;"}
+## DATA
 
 We got our deforestation data from www.globalforestwatch.org and our bird species data from https://www.gbif.org. 
 
-To understand the impacts of deforestation, we used a deforestation dataset. This dataset, we called "net_tree_change.csv", had important variables: gain, loss, net, gfw_area__ha, the latter indicating the total forest size at the beginning. Using this dataset, we calculated 10  countries with the most negative forest size change between 2000-2020, and 10 countries with the most positive forest size change between 2000-2020. Among these 10 countries for each category, we chose 5 that had enough data points so we could conduct analysis, but not too much data points like Brazil or the US, that would take up gigabytes of memory. The countries we chose for each category are highlighted below:
-![Fig1. Countries List](images/list_countries.png){style="width: 20%; float: right; margin-left: 10px; margin-top: 10px;" fig-cap="Fig. 1: Country List"} 
+To understand the impacts of deforestation, we used a deforestation dataset. This dataset, we called "net_tree_change.csv", had important variables: gain, loss, net, gfw_area__ha, the latter indicating the total forest size at the beginning. Using this dataset, we calculated 10  countries with the most negative forest size change between 2000-2020, and 10 countries with the most positive forest size change between 2000-2020. Among these 10 countries for each category, we chose 5 that had enough data points so we could conduct analysis, but not too much data points like Brazil or the US, that would take up gigabytes of memory. The countries we chose for each category are highlighted below: ![Geodist](images/deforestation.png){style="width: 40%; float: right; margin-left: 10px; margin-top: 10px; margin-bottom: 10px;"}
 
 Highest Net Forest Loss: 
 **Paraguay(PRY), Democratic Republic of Congo(COD), Mozambique(MOZ), Indonesia(IDN), Tanzania(TZA)**
@@ -26,7 +46,7 @@ Highest Net Forest Loss:
 Highest Net Forest Gain:
 **Uruguay(URY), Ukraine(UKR), Poland(POL), Ireland(IRL), Bangladesh(BGD)**
 
-GBIF(Global Biodiversity Information Facility) is home to data information belonging to thousands of different species, including the species "Aves" which is the taxonomic label describing birds. the GBIF database, houses hundreds of gigabytes worth of data, with each row(observation) indicating a species observation, with many information relating to the species and location observed per each row including kingdom, phylum, class, order, family, genus, species, countrycode, stateProvince, indivisualCount, decimalLatitude, decimalLongitude, day, month, year etc. ![Geodist](images/fig2.png){style="width: 40%; float: right; margin-left: 15px; margin-top: 10px; margin-bottom: 10px;" fig-cap="Fig. 2: Geographical<br> Distribution in Poland"}
+GBIF(Global Biodiversity Information Facility) is home to data information belonging to thousands of different species, including the species "Aves" which is the taxonomic label describing birds. the GBIF database, houses hundreds of gigabytes worth of data, with each row(observation) indicating a species observation, with many information relating to the species and location observed per each row including kingdom, phylum, class, order, family, genus, species, countrycode, stateProvince, indivisualCount, decimalLatitude, decimalLongitude, day, month, year etc.
 
 We applied various 3 filters to the dataset to download the right data. These filters are highlighted below:
 
@@ -37,8 +57,11 @@ We applied various 3 filters to the dataset to download the right data. These fi
 - **Order:** Coraciiformes, Strigiformes, Galliformes, Ciconiiformes
 
 We previously explained how we chose 10 countries, 5 of which has experienced more forest loss than gain, and the other 5, the opposite. **Coraciiformes**, **Strigiformes**, both live in forests and woodlands. **Galliformes** live on shrublands, and **Ciconiiformes** live on wetlands. We wanted to capture a high variance with the selection of these 4 orders. They also offered enough datapoints for analysis while not occupying high amounts of memory space. The GBIF database offers observations starting 1900, all the way until the present. We only acquired data from years 2000, 2010, and 2020, due to the limitation of limited memory space. This is in parallel with the time span captured by the deforestation data. 
+:::
 
-**METHODS**
+
+:::{#methods style="background-color: #d9ead3; padding: 20px;"}
+## METHODS ![](plots/Bangladesh_log.png){style="width: 25%; float: right; margin-left: 15px; margin-top: 10px; margin-bottom: 10px;"}
 
 **1.** We downloaded all the data manually and placed them into folders as highlighted by **Fig 1**. Our processing includes the following:
 
@@ -48,8 +71,6 @@ We previously explained how we chose 10 countries, 5 of which has experienced mo
 
   - changing variables with numeric meanings from <*chr*> to <*dbl*>
 
-![](plots/Bangladesh_log.png){style="width: 40%; float: right; margin-left: 15px; margin-top: 10px; margin-bottom: 10px;"}
-
   - changed *countryCode* variable in *forest_data* to *countryName* for consistency 
 
 
@@ -58,9 +79,7 @@ We previously explained how we chose 10 countries, 5 of which has experienced mo
 **3.** We calculated the counts of each bird order in each country, and tracked their change across time as shown in fig 3 for Bangladesh.
 
 **4.** We visualized the geospatial change of bird order concentrations across time. Our deforestation data don't unfortunately provide detail about the precise location of forest lost and gained, so it's hard to infer correlations between changes in bird number concentrations and changes in forests. 
-
-  ![geobird](images/geo_pol_10_20.png){style="width: 80%; margin-top: 10px; margin-bottom: 10px;"}
-
+![geobird](images/geo_pol_10_20.png){style="width: 50%; float: right; margin-left: 15px;margin-top: 10px; margin-bottom: 10px;"}
   
 The number of people in every country who engage actively in bird-watching and online reporting of bird sightings increased significantly between 2000 and 2020, possibly as a result of a combination of population increases, more widespread and easy access to the internet and mobile devices, and more awareness of personal and mental benefits of bird watching as a hobby. This meant that although the population of all the bird species is known to have decreased, the number of people seeking out and reporting bird sightings increased, making the data show a supposed increase in the number of birds sighted, when that isn’t truly the case. Thus, we needed to conduct some preliminary work before using the data. 
 
@@ -79,12 +98,27 @@ The next step was to train different models. We used our aforementioned new data
 In our process to try and find a model that would accurately predict changes in bird sightings based on forest area changes, we trained and tested 5 different models. 
 
 - **Model 1:** Support Vector Machines with Polynomial Kernels. 
-We used the binned version of our data to train the support vector machine. Additionally, when processing the data for the recipe used in this model, we let all the variables of type ‘double’ remain as is. However, the variables ‘species’ and ‘country’ which were characters, were changed to a factored form and one-hot encoded. With the ‘year’ variable, in order to ensure that there is a clear difference between the difference in time between 2000 - 2010 and 2000 - 20202, we chose not to one-hot encode the variable, but rather assigned the value 0 to 2000, 1 to 2010, and 2 to 2020, ensuring that the concept of uniform time difference was correctly represented in the form of distance on our visuals. We then used cross-validation with v = 4 to tune the parameters of this model. However, although the accuracy results of this model were not the worst (0.23),and had some predictive power, when we plotted the results in the below confusion matrix heat map, we were able to see that the model simply categorised all the observations into bin 3. This makes sense given a large portion of our data did fall into bin 3, but it also Indicated that the model was unable to capture the underlying nuances and differences between the observations, making it ineffective.
+We used the binned version of our data to train the support vector machine. Additionally, when processing the data for the recipe used in this model, we let all the variables of type ‘double’ remain as is. However, the variables ‘species’ and ‘country’ which were characters, were changed to a factored form and one-hot encoded. ![Geodist](images/svm_rbf_matrix.png){style="width: 20%; float: right; margin-left: 15px; margin-top: 10px; margin-bottom: 10px;"} With the ‘year’ variable, in order to ensure that there is a clear difference between the difference in time between 2000 - 2010 and 2000 - 20202, we chose not to one-hot encode the variable, but rather assigned the value 0 to 2000, 1 to 2010, and 2 to 2020, ensuring that the concept of uniform time difference was correctly represented in the form of distance on our visuals. We then used cross-validation with v = 4 to tune the parameters of this model. However, although the accuracy results of this model were not the worst (0.23), and had some predictive power, when we plotted the results in the below confusion matrix heat map, we were able to see that the model simply categorised all the observations into bin 3. This makes sense given a large portion of our data did fall into bin 3, but it also Indicated that the model was unable to capture the underlying nuances and differences between the observations, making it ineffective.
 
 - **Model 2:** Radial Basis Support Vector Machine 
-Similarly to the previous model, we used the binned data to train and test this model, and used cross-validation with v = 4 to tune the cost value as well as the radial basis sigma value. Upon testing the model with our data, we found that the mean accuracy was consistent across different cost values, which indicates an error in the process. The accuracy mean in this case is 0.22. Upon visualising the results, we find a similar result to the previous model wherein the model predicts every single observation to be falling into the third bin, which defeats the purpose and does not capture any differences. 
+![Geodist](images/svm-poly.png){style="width: 20%; float: right; margin-left: 15px; margin-top: 10px; margin-bottom: 10px;"}Similarly to the previous model, we used the binned data to train and test this model, and used cross-validation with v = 4 to tune the cost value as well as the radial basis sigma value. Upon testing the model with our data, we found that the mean accuracy was consistent across different cost values, which indicates an error in the process. The accuracy mean in this case is 0.26. Upon visualising the results, we find a similar result to the previous model wherein the model predicts every single observation to be falling into the third bin, which defeats the purpose and does not capture any differences. 
 
-**LIMITATIONS**
+- **Model 3:** Regression Random Forest
+
+![rf_pred](images/random_forest_training_prediction.png){style="width: 20%; float:right; margin-top: 10px; margin-bottom: 10px;"}
+
+- **Model 4:** Classification Random Forest 
+
+![rf_var_imp_bins](images/randomforest_var_iportance_categorical_bins.png){style="width: 20%; float:right; margin-top: 10px; margin-bottom: 10px;"}
+
+
+
+- **Model 5:** KNN
+![Geodist](images/knn_accuracy.png){style="width: 20%; float: right; margin-left: 15px; margin-top: 10px; margin-bottom: 10px;"}
+:::
+
+:::{#limitations style="background-color: #fff2cc; padding: 20px;"}
+## LIMITATIONS
 
 While this work doesn't purport a strong correlation between changes in forest size and the biodiversity of birds, there are many limitations to this study that might cause the networks' inability to detect patterns.
 
@@ -92,11 +126,14 @@ While this work doesn't purport a strong correlation between changes in forest s
 
 - For some countries and species, there was no observation data belonging to year 2000. 
 
-- Talk about dataframe having 107 rows, and trying to train a RF with 500 trees etc. Data was too large, but then collapsed to have minimum rows. 
+- The original bird dataset was huge, with around 100,000 rows, each row representing a single observation of a bird species' in small numbers. On the other hand, when counts of entries with different country, year and species information were calculated, the dataset collapsed into having only 107 rows. We worked with 10 different countries, 3 distinct values for year, and 4 distinct bird species, expecting to have in total 120 rows in the final dataset. Due to previous limitation, some rows belonging to year 2000 mainly were missing. A model that is trained on 107 observations doesn't have a strong predictive power because of the smallness of the trained set.    
+
 
 - Number of observations of specific species varied significantly across countries. Normalization between 0-1 was aimed at tackling this problem. 
+:::
 
-**DISCUSSION: **
+:::{#discussion style="background-color: #fce5cd; padding: 20px;"}
+## DISCUSSION:
 
 Our original goal for this project was to use various variables relating to the extent of deforestation and changes in forest size to predict the number of sightings of different bird species in several selected countries. We planned on comparing the number of sightings per bird species in a country in the years 2000 and 2020, as downloading the data for every single years would be too computationally expensive for our devices. In order to obtain our numerical values for the number of bird sightings, the data-collectors relied on sightings from bird-watchers and other citizens of the country.
 
@@ -105,7 +142,9 @@ Given our results, at this point, we would like to talk about the place of this 
 If we were to be able to train a model in the future that would be able to more accurately use the rate of deforestation in certain countries to predict the number of birds threatened by deforestation, as well as which species of birds are most impacted by deforestation, we could streamline our conservation and protection efforts as we would be able to tell which species are most in need of protection. Additionally, this would be an extremely positive use of data that is collected from public observations and bird-watching practices, allowing the community at large to help with conservation and protection of endangered species. We strongly believe that any steps towards better time, capital, and resource allocation when it comes to biodiversity conservation and habitat restoration can go a long way, and having a highly accurate means of knowing which species are struggling the most to adapt to the deforestation that persists in many areas of the world would be a large leap. We hope that our project could act as a starting point to the long journey of more efficient and hopefully effective wildlife conservation. 
 
 Thank you for following along. This work was done by Ulas Ayyilmaz and Ishika Keswani as a  final project in our Computational Statistics Class, led by Jo Hardin <3. 
+:::
 
+:::{#discussion style="background-color: #f4cccc; padding: 20px;"}
 Variable names used for future reference:
 *all_birds_data*, *filtered_bird_orders*, *filtered_forest_data*, *joined_data*, *joined_data*, *country_density_map*, *country_density_map_logscale*(counts in log_scale), *model_data_log*, *model_data_log_normalized*, *model_data_log_normalized_bins*, *train_data_bins*, *test_data_bins*
-
+:::

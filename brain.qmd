@@ -1,14 +1,3 @@
----
-title: PRIVACY LABELS
-format: closeread-html
----
-
-:::{.cr-section}
-
-:::{#cr-ishika}
-![Privacy Nutrition Labels](Data_tracking.png)
-:::
-
 
 Privacy Terms Final Project Proposal
 
